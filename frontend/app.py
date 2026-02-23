@@ -8,6 +8,7 @@ if str(project_root) not in sys.path:
 
 import streamlit as st
 import asyncio
+import time
 from datetime import datetime, timedelta
 import os
 import tempfile
@@ -20,10 +21,12 @@ import json
 from scripts.index_text import (
     get_qdrant_client,
     get_embeddings_model,
+    get_collection_names_for_dimension,
     process_file,
     generate_file_metadata,
     generate_doc_id
 )
+from scripts import embed_config
 
 from scripts.report_inventory import (
     generate_inventory_report
@@ -37,38 +40,59 @@ from scripts.rg_pipeline import set_env, retrieve_context, RAGRetriever, create_
 from sessions.sessionManager import SessionManager
 
 load_dotenv()
-QDcollection = "research_papers"
+
+# One folder = one Qdrant collection. Default name for first/legacy collection.
+DEFAULT_COLLECTION_NAME = "research_papers"
+
+
+def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str:
+    """Generate answer using Azure or Ollama based on model_id."""
+    import requests
+    mid = model_id or st.session_state.get("selected_llm_id") or embed_config.get_default_llm_id()
+    if embed_config.is_ollama(mid):
+        model_name = embed_config.get_ollama_model_name(mid)
+        base_url = (os.getenv("OLLAMA_BASE_URL") or "http://localhost:11434").rstrip("/")
+        # Build Ollama messages from OpenAI-format messages
+        ollama_messages = []
+        for m in messages:
+            role = "system" if m["role"] == "system" else m["role"]
+            ollama_messages.append({"role": role, "content": m["content"]})
+        try:
+            r = requests.post(
+                f"{base_url}/api/chat",
+                json={"model": model_name, "messages": ollama_messages, "stream": False},
+                timeout=300,
+            )
+            r.raise_for_status()
+            data = r.json()
+            return data.get("message", {}).get("content", "")
+        except Exception as e:
+            return f"Ollama error: {e}"
+    # Azure
+    client = st.session_state.get("client")
+    if not client:
+        return "No chat client configured."
+    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+    resp = client.chat.completions.create(
+        model=deployment,
+        messages=messages,
+        temperature=0.7,
+        max_tokens=800,
+    )
+    return resp.choices[0].message.content
 
 # ============================================================================
-# INTEGRATION HELPERS
+# INTEGRATION HELPERS (one folder = one Qdrant collection)
 # ============================================================================
 
-def get_available_folders() -> List[str]:
-    """Get list of unique folders in the collection"""
+def get_available_folders(embedding_id: Optional[str] = None) -> List[str]:
+    """Get list of Qdrant collection names compatible with current embedding dimension."""
     try:
         qdrant_client = get_qdrant_client()
-        scroll_result = qdrant_client.scroll(
-            collection_name=QDcollection,
-            limit=10000,
-            with_payload=["folder_name", "collection"]
-        )
-        
-        folders = set()
-        for point in scroll_result[0]:
-            if point.payload:
-                # Use collection name as folder
-                collection = point.payload.get("collection")
-                folder_name = point.payload.get("folder_name")
-                
-                # Prefer collection name (from new system)
-                if collection and collection != "Unknown":
-                    folders.add(collection)
-                elif folder_name and folder_name != "Unknown":
-                    folders.add(folder_name)
-        
-        return sorted(list(folders))
-    except Exception as e:
-        st.error(f"Error fetching folders: {e}")
+        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        dimension = embed_config.get_embedding_dimension(eid)
+        return get_collection_names_for_dimension(qdrant_client, dimension)
+    except Exception:
         return []
 
 
@@ -76,159 +100,151 @@ def retrieve_context_with_folder(
     query: str,
     qdrant_client,
     embeddings,
-    collection_name: str,
-    folder_filter: Optional[str] = None,
-    top_k: int = 5
+    collection_name: Optional[str],
+    top_k: int = 5,
+    embedding_id: Optional[str] = None,
 ) -> List[Dict]:
     """
-    Retrieve context with optional folder filtering
-    Compatible with both old and new metadata structures
+    Retrieve context from one or all Qdrant collections.
+    Only searches collections whose vector size matches the current embedding dimension.
     """
     try:
+        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        dimension = embed_config.get_embedding_dimension(eid)
         query_vector = embeddings.embed_query(query)
-        
-        # Build filter for folder/collection
-        search_filter = None
-        if folder_filter and folder_filter != "All Folders":
-            # Try both collection and folder_name fields for compatibility
-            search_filter = {
-                "should": [
-                    {"key": "collection", "match": {"value": folder_filter}},
-                    {"key": "folder_name", "match": {"value": folder_filter}}
-                ]
-            }
-        
-        # Search with filter
-        results = qdrant_client.search(
-            collection_name=collection_name,
-            query_vector=query_vector,
-            query_filter=search_filter,
-            limit=top_k,
-            with_payload=True
-        )
-        
+        all_results = []
+
+        if collection_name:
+            # Single collection: search directly (skip get_collection to avoid client/server schema mismatch)
+            try:
+                results = qdrant_client.search(
+                    collection_name=collection_name,
+                    query_vector=query_vector,
+                    limit=top_k,
+                    with_payload=True
+                )
+                all_results = [(r, collection_name) for r in results]
+            except Exception:
+                all_results = []
+        else:
+            # All Folders: only collections matching current embedding dimension
+            collection_names = get_collection_names_for_dimension(qdrant_client, dimension)
+            for coll_name in collection_names:
+                try:
+                    results = qdrant_client.search(
+                        collection_name=coll_name,
+                        query_vector=query_vector,
+                        limit=top_k,
+                        with_payload=True
+                    )
+                    all_results.extend([(r, coll_name) for r in results])
+                except Exception:
+                    continue
+            all_results.sort(key=lambda x: x[0].score, reverse=True)
+            all_results = all_results[:top_k]
+
         contexts = []
-        for result in results:
-            # Extract folder/collection name (prefer new structure)
-            folder = result.payload.get("collection") or result.payload.get("folder_name", "Unknown")
-            file_name = result.payload.get("file_name", "Unknown")
-            
+        for result, coll_name in all_results:
+            payload = result.payload or {}
+            # Prefer file_name; fall back to basename of source_path (index_text stores source_path)
+            source_path = payload.get("source_path", "")
+            file_name = payload.get("file_name") or (Path(source_path).name if source_path else "Unknown")
+            page_num = payload.get("page_number") or payload.get("page_start") or 0
             contexts.append({
-                "text": result.payload.get("text", ""),
-                "source": result.payload.get("source", file_name),
-                "page_number": result.payload.get("page_number", 0),
+                "text": payload.get("text", ""),
+                "source": source_path or file_name,
+                "page_number": page_num,
                 "score": result.score,
-                "doc_type": result.payload.get("doc_type", "document"),
-                "folder_name": folder,
+                "doc_type": payload.get("doc_type", "document"),
+                "folder_name": coll_name,
                 "file_name": file_name
             })
-        
         return contexts
-        
+
     except Exception as e:
-        st.error(f"Error retrieving context: {e}")
+        err = str(e).strip() or type(e).__name__
+        if "connection" in err.lower() or "embed" in err.lower():
+            st.error(f"Error retrieving context: {err}. Check Azure OpenAI endpoint and API key (embeddings).")
+        else:
+            st.error(f"Error retrieving context: {err}")
         return []
 
 
 def get_folder_documents_ui(folder_name: str) -> List[Dict]:
-    """Get all documents in a specific folder (UI version)"""
+    """Get all documents in a folder (folder = one Qdrant collection)."""
     try:
         qdrant_client = get_qdrant_client()
         scroll_result = qdrant_client.scroll(
-            collection_name=QDcollection,
-            scroll_filter={
-                "should": [
-                    {"key": "collection", "match": {"value": folder_name}},
-                    {"key": "folder_name", "match": {"value": folder_name}}
-                ]
-            },
+            collection_name=folder_name,
             limit=10000,
             with_payload=["file_name", "doc_id", "doc_type"]
         )
-        
         docs = {}
         for point in scroll_result[0]:
-            file_name = point.payload.get("file_name", "Unknown")
-            doc_id = point.payload.get("doc_id")
-            
+            payload = point.payload or {}
+            file_name = payload.get("file_name", "Unknown")
+            doc_id = payload.get("doc_id")
             if file_name not in docs:
                 docs[file_name] = {
                     "file_name": file_name,
                     "doc_id": doc_id,
-                    "doc_type": point.payload.get("doc_type", "document"),
+                    "doc_type": payload.get("doc_type", "document"),
                     "chunks": 0
                 }
             docs[file_name]["chunks"] += 1
-        
         return list(docs.values())
-        
     except Exception as e:
         st.error(f"Error fetching folder documents: {e}")
         return []
 
 
 def get_folder_statistics(folder_name: str) -> Dict:
-    """Get statistics for a folder"""
+    """Get statistics for a folder (folder = one Qdrant collection)."""
     try:
         qdrant_client = get_qdrant_client()
         scroll_result = qdrant_client.scroll(
-            collection_name=QDcollection,
-            scroll_filter={
-                "should": [
-                    {"key": "collection", "match": {"value": folder_name}},
-                    {"key": "folder_name", "match": {"value": folder_name}}
-                ]
-            },
+            collection_name=folder_name,
             limit=10000,
             with_payload=True
         )
-        
         points = scroll_result[0]
         unique_files = set()
         doc_types = {}
-        
         for point in points:
-            file_name = point.payload.get("file_name")
-            doc_type = point.payload.get("doc_type", "document")
-            
+            payload = point.payload or {}
+            file_name = payload.get("file_name")
+            doc_type = payload.get("doc_type", "document")
             if file_name:
                 unique_files.add(file_name)
             if doc_type:
                 doc_types[doc_type] = doc_types.get(doc_type, 0) + 1
-        
         return {
             "total_chunks": len(points),
             "total_files": len(unique_files),
             "doc_types": doc_types,
             "files": sorted(list(unique_files))
         }
-        
     except Exception as e:
         st.error(f"Error fetching folder stats: {e}")
         return {}
 
 
-def ingest_file_to_collection(file_path: str, collection_name: str) -> Dict:
+def ingest_file_to_collection(file_path: str, collection_name: str, embedding_id: Optional[str] = None) -> Dict:
     """
-    Ingest a file using the new refactored system
-    
-    Args:
-        file_path: Path to file
-        collection_name: Target collection (will be used as folder name)
-        
-    Returns:
-        Result dictionary
+    Ingest a file using the new refactored system.
+    Uses selected embedding from UI (or embedding_id) so collection dimension matches.
     """
     try:
-        embeddings_model = get_embeddings_model()
+        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL")
+        embeddings_model = get_embeddings_model(eid)
         qdrant_client = get_qdrant_client()
         
-        # Process file using refactored pipeline
         result = process_file(
             file_path=file_path,
             collection_name=collection_name,
             embeddings_model=embeddings_model,
-            client=qdrant_client
+            client=qdrant_client,
+            embedding_id=eid,
         )
         
         return result
@@ -276,7 +292,8 @@ def get_theme_css(theme):
                 --chat-assistant-bg: #0d1117;
             }
             .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
-            .stChatMessage { background-color: var(--chat-assistant-bg) !important; border-radius: 12px !important; padding: 12px !important; margin: 8px 0 !important; color: var(--text-primary) !important; }
+            .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-assistant-bg) !important; border-radius: 12px !important; padding: 12px !important; margin: 8px 0 !important; color: var(--text-primary) !important; }
+            .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
             .law-firm-header { background: linear-gradient(90deg,#06263e 0%, #0b3a66 100%) !important; color: #dbeeff !important; padding: 18px 16px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 2px solid rgba(255,255,255,0.04) !important; }
             .law-firm-title { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.6px; }
             .main-title { font-size: 2.4rem; font-weight: 800; text-align: center; background: linear-gradient(135deg, #2aa2ff 10%, #66b2ff 60%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 6px 18px rgba(10,20,30,0.6); margin-bottom: 10px; }
@@ -304,10 +321,11 @@ def get_theme_css(theme):
                 --chat-assistant-bg: #ffffff;
             }
             .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
-            .stChatMessage { background-color: var(--bg-secondary) !important; border-radius: 10px !important; padding: 10px !important; margin: 5px 0 !important; }
+            .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-user-bg) !important; border-radius: 10px !important; padding: 10px !important; margin: 5px 0 !important; color: var(--text-primary) !important; }
+            .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
             .law-firm-header { background-color: #003876 !important; color: white !important; padding: 15px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 3px solid #002850 !important; }
             .main-title { font-size: 2.5em; font-weight: bold; text-align: center; background: linear-gradient(135deg, #003876 0%, #0056b3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-            .source-box { background-color: #e8f4f8 !important; border-left: 4px solid #667eea !important; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.9em; }
+            .source-box { background-color: #e8f4f8 !important; border-left: 4px solid #667eea !important; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.9em; color: #1a1a2e !important; }
             .folder-badge { background: linear-gradient(135deg, #003876 0%, #0056b3 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
             #MainMenu {visibility: hidden;} footer {visibility: hidden;}
         </style>
@@ -349,14 +367,20 @@ atexit.register(cleanup_session)
 # INITIALIZE SESSION STATE
 # ============================================================================
 
+# Default model selection (from config/env)
+if "selected_embedding_id" not in st.session_state:
+    st.session_state.selected_embedding_id = os.getenv("EMBED_MODEL", "azure_ada")
+if "selected_llm_id" not in st.session_state:
+    st.session_state.selected_llm_id = embed_config.get_default_llm_id()
+
 if 'initialized' not in st.session_state:
     with st.spinner("🚀 Initializing RAG system..."):
         try:
-            # Initialize using refactored system
+            # Initialize using refactored system (embedding from config/UI selection)
             qdrant_client = get_qdrant_client()
-            embeddings = get_embeddings_model()
+            embeddings = get_embeddings_model(st.session_state.get("selected_embedding_id"))
             
-            # Initialize Azure OpenAI for chat
+            # Initialize Azure OpenAI for chat (used when LLM is Azure)
             az_model_client, client, _ = set_env()
             
             # Validate components
@@ -434,41 +458,44 @@ if not st.session_state.messages_loaded and hasattr(st.session_state, 'session_m
 # COLLECTION STATS
 # ============================================================================
 
-def get_collection_stats():
-    """Get statistics about the collection"""
+def get_collection_stats(collection_name: Optional[str] = None):
+    """Get statistics. If collection_name is None, aggregate over all collections (folders)."""
     try:
         qdrant_client = get_qdrant_client()
-        collection_info = qdrant_client.get_collection(QDcollection)
-        
-        all_points = qdrant_client.scroll(
-            collection_name=QDcollection,
-            limit=10000,
-            with_payload=True
-        )
-        
-        unique_docs = set()
-        unique_folders = set()
-        for point in all_points[0]:
-            if point.payload:
-                if "doc_id" in point.payload:
-                    unique_docs.add(point.payload["doc_id"])
-                
-                # Check both collection and folder_name
-                collection = point.payload.get("collection")
-                folder = point.payload.get("folder_name")
-                
-                if collection and collection != "Unknown":
-                    unique_folders.add(collection)
-                elif folder and folder != "Unknown":
-                    unique_folders.add(folder)
-        
+        if collection_name:
+            info = qdrant_client.get_collection(collection_name)
+            scroll_result = qdrant_client.scroll(
+                collection_name=collection_name,
+                limit=10000,
+                with_payload=["doc_id"]
+            )
+            unique_docs = {p.payload.get("doc_id") for p in scroll_result[0] if p.payload and p.payload.get("doc_id")}
+            return {
+                "total_documents": len(unique_docs),
+                "total_chunks": info.points_count,
+                "total_folders": 1,
+                "vector_size": info.config.params.vectors.size
+            }
+        collections = qdrant_client.get_collections().collections
+        total_chunks = 0
+        total_docs = 0
+        vector_size = 1536
+        for c in collections:
+            try:
+                info = qdrant_client.get_collection(c.name)
+                total_chunks += info.points_count
+                vector_size = info.config.params.vectors.size
+                scroll_result = qdrant_client.scroll(collection_name=c.name, limit=10000, with_payload=["doc_id"])
+                total_docs += len({p.payload.get("doc_id") for p in scroll_result[0] if p.payload and p.payload.get("doc_id")})
+            except Exception:
+                continue
         return {
-            "total_documents": len(unique_docs),
-            "total_chunks": collection_info.points_count,
-            "total_folders": len(unique_folders),
-            "vector_size": collection_info.config.params.vectors.size
+            "total_documents": total_docs,
+            "total_chunks": total_chunks,
+            "total_folders": len(collections),
+            "vector_size": vector_size
         }
-    except:
+    except Exception:
         return {"total_documents": 0, "total_chunks": 0, "total_folders": 0, "vector_size": 1536}
 
 # ============================================================================
@@ -493,17 +520,50 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     
-    # FOLDER SELECTION
+    # Model selection (embedding + answer)
+    st.markdown("### ⚙️ Models")
+    embed_opts = embed_config.get_embedding_options()
+    embed_labels = [o["label"] for o in embed_opts]
+    embed_ids = [o["id"] for o in embed_opts]
+    current_embed_id = st.session_state.get("selected_embedding_id") or embed_ids[0]
+    embed_idx = embed_ids.index(current_embed_id) if current_embed_id in embed_ids else 0
+    new_embed_label = st.selectbox(
+        "Embedding model",
+        options=embed_labels,
+        index=embed_idx,
+        key="embedding_selector",
+    )
+    new_embed_id = embed_ids[embed_labels.index(new_embed_label)]
+    if new_embed_id != st.session_state.get("selected_embedding_id"):
+        st.session_state.selected_embedding_id = new_embed_id
+        st.session_state.embeddings = get_embeddings_model(new_embed_id)
+    
+    llm_opts = embed_config.get_llm_options()
+    llm_labels = [o["label"] for o in llm_opts]
+    llm_ids = [o["id"] for o in llm_opts]
+    current_llm_id = st.session_state.get("selected_llm_id") or llm_ids[0]
+    llm_idx = llm_ids.index(current_llm_id) if current_llm_id in llm_ids else 0
+    selected_llm_label = st.selectbox(
+        "Answer model",
+        options=llm_labels,
+        index=llm_idx,
+        key="llm_selector",
+    )
+    if selected_llm_label in llm_labels:
+        st.session_state.selected_llm_id = llm_ids[llm_labels.index(selected_llm_label)]
+    
+    st.markdown("---")
     st.markdown("### 📁 Select Collection")
     
     available_folders = ["All Folders"] + get_available_folders()
-    
+    current = st.session_state.get("selected_folder", "All Folders")
+    idx = available_folders.index(current) if current in available_folders else 0
     selected_folder = st.selectbox(
         "Filter by collection:",
         options=available_folders,
-        index=available_folders.index(st.session_state.get('selected_folder', 'All Folders')),
+        index=idx,
         key="folder_selector",
-        help="Choose a collection to search within"
+        help="One folder = one collection. Choose a collection to search within (isolation)."
     )
     
     if selected_folder != st.session_state.get('selected_folder'):
@@ -645,10 +705,13 @@ with st.sidebar:
                 key="upload_collection_select"
             )
         else:
+            # When no collections exist, default to research_papers (plan: optional default)
+            default_new = "research_papers" if not existing_collections else ""
             target_collection = st.text_input(
                 "New collection name:",
+                value=default_new,
                 key="upload_collection_new",
-                placeholder="e.g., hydrogen_books"
+                placeholder="e.g., research_papers or my_docs"
             )
         
         # File uploader
@@ -773,15 +836,16 @@ if prompt := st.chat_input("Ask a question about your documents..."):
         
         with st.spinner("🤔 Thinking..."):
             try:
-                folder_filter = st.session_state.get('selected_folder', 'All Folders')
-                
+                folder_filter = st.session_state.get("selected_folder", "All Folders")
+                # One folder = one Qdrant collection; pass that collection or None for "All Folders"
+                search_collection = None if folder_filter == "All Folders" else folder_filter
+
                 # Retrieve context
                 contexts = retrieve_context_with_folder(
                     query=prompt,
                     qdrant_client=st.session_state.qdrant,
                     embeddings=st.session_state.embeddings,
-                    collection_name=QDcollection,
-                    folder_filter=folder_filter if folder_filter != "All Folders" else None,
+                    collection_name=search_collection,
                     top_k=5
                 )
                 
@@ -816,14 +880,7 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                         }
                     ]
                     
-                    response = st.session_state.client.chat.completions.create(
-                        model=os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME"),
-                        messages=messages,
-                        temperature=0.7,
-                        max_tokens=800
-                    )
-                    
-                    answer = response.choices[0].message.content
+                    answer = generate_answer(messages, model_id=st.session_state.get("selected_llm_id"))
                     message_placeholder.markdown(answer)
                     
                     # Show sources

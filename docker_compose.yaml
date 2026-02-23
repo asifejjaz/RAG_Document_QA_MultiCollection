@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Qdrant Vector Database
   qdrant:
@@ -25,41 +23,49 @@ services:
   # RAG API Service
   rag-api:
     build:
-      context: ..
-      dockerfile: client_folder/Dockerfile
+      context: .
+      dockerfile: Dockerfile
     container_name: rag-api
+    env_file: .env
     ports:
       - "8501:8501"  # Streamlit
       - "8000:8000"  # Optional: FastAPI if you add it later
     volumes:
       # Mount corpus data as read-only
-      - ../data:/data:ro
+      - ./data:/data:ro
       # Mount state/output directory
       - rag_state:/state
       # Mount sessions directory
-      - ./sessions:/app/client_folder/frontend/sessions
+      - ./sessions:/app/frontend/sessions
+      # Mount app code so edits apply without rebuild (Streamlit auto-reloads)
+      - .:/app
     environment:
-      # Paths
       - DATA_ROOT=/data
       - STATE_ROOT=/state
-      
-      # Vector DB
       - QDRANT_URL=http://qdrant:6333
+      - VECTOR_DB_URL=http://qdrant:6333
       - QDRANT_PORT=6333
-      
-      # Azure OpenAI (load from .env file)
-      - AZURE_OPENAI_ENDPOINT=${AZURE_OPENAI_ENDPOINT}
-      - AZURE_OPENAI_API_KEY=${AZURE_OPENAI_API_KEY}
-      - AZURE_OPENAI_API_VERSION=${AZURE_OPENAI_API_VERSION:-2023-05-15}
-      - AZURE_OPENAI_DEPLOYMENT_NAME=${AZURE_OPENAI_DEPLOYMENT_NAME}
-      - AZURE_OPENAI_MODEL=${AZURE_OPENAI_MODEL:-gpt-4}
+      - OLLAMA_BASE_URL=http://ollama:11434
     depends_on:
-      qdrant:
-        condition: service_healthy
+      - qdrant
     restart: unless-stopped
     networks:
       - rag-network
-    command: streamlit run frontend/app.py --server.port=8501 --server.address=0.0.0.0
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
+
+  # Ollama (local LLM)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: rag-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    restart: unless-stopped
+    networks:
+      - rag-network
 
 # Named volumes
 volumes:
@@ -67,6 +73,8 @@ volumes:
     name: qdrant_data
   rag_state:
     name: rag_state
+  ollama_models:
+    name: ollama_models
 
 # Network
 networks:

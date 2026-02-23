@@ -1,0 +1,25 @@
+# Eva Rsearch AI - dependencies
+streamlit>=1.28.0
+python-dotenv>=1.0.0
+openai>=1.50.0
+langchain-openai>=0.2.0
+langchain-community>=0.3.0
+qdrant-client==1.7.3
+llama-index>=0.10.0
+pymupdf>=1.23.0
+docx2txt>=0.8
+azure-ai-formrecognizer>=1.0.0
+azure-core>=1.29.0
+autogen-ext>=0.4.2
+autogen-agentchat>=0.4.2
+autogen-core
+fastapi
+uvicorn[standard]==0.27.0
+pydantic>=2.10.0,<3.0.0
+pydantic-settings>=2.1.0
+python-multipart==0.0.6
+requests
+llama-index-core==0.10.11
+pyautogen[openai]==0.2.18
+sentence-transformers>=2.2.0
+

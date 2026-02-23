@@ -21,13 +21,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Set working directory to where app.py is
-WORKDIR /app/client_folder/frontend
+WORKDIR /app/frontend
 
 # Create necessary directories
 RUN mkdir -p /state/reports && \
-    mkdir -p /app/sessions && \
+    mkdir -p /app/frontend/sessions && \
     chmod -R 755 /state && \
-    chmod -R 755 /app/sessions
+    chmod -R 755 /app/frontend/sessions
 
 # Expose ports
 EXPOSE 8501
@@ -38,7 +38,7 @@ ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     DATA_ROOT=/data \
     STATE_ROOT=/state \
-    PYTHONPATH=/app/client_folder:/app
+    PYTHONPATH=/app
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
