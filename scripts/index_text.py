@@ -55,8 +55,8 @@ load_dotenv()
 class Config:
     """Configuration for document ingestion"""
     
-    # Qdrant (support both QDRANT_URL and VECTOR_DB_URL)
-    QDRANT_URL = os.getenv("VECTOR_DB_URL") or os.getenv("QDRANT_URL", "http://localhost:6333")
+    # Qdrant: prefer QDRANT_URL (e.g. host override) then VECTOR_DB_URL (.env / Docker)
+    QDRANT_URL = os.getenv("QDRANT_URL") or os.getenv("VECTOR_DB_URL") or "http://localhost:6333"
     QDRANT_PORT = int(os.getenv("QDRANT_PORT", "6333"))
     QDRANT_TIMEOUT = 60
     QDRANT_COLLECTION_PREFIX = os.getenv("QDRANT_COLLECTION_PREFIX", "").strip()
