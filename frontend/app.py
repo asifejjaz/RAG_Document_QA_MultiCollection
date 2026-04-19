@@ -22,6 +22,7 @@ from scripts.index_text import (
     get_qdrant_client,
     get_embeddings_model,
     get_collection_names_for_dimension,
+    delete_qdrant_collection,
     process_file,
     generate_file_metadata,
     generate_doc_id
@@ -46,7 +47,7 @@ DEFAULT_COLLECTION_NAME = "research_papers"
 
 
 def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str:
-    """Generate answer using Azure or Ollama based on model_id."""
+    """Generate answer using Azure, OpenAI.com API, or Ollama based on model_id."""
     import requests
     mid = model_id or st.session_state.get("selected_llm_id") or embed_config.get_default_llm_id()
     if embed_config.is_ollama(mid):
@@ -68,10 +69,25 @@ def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str
             return data.get("message", {}).get("content", "")
         except Exception as e:
             return f"Ollama error: {e}"
-    # Azure
+    if embed_config.is_openai_platform(mid):
+        oclient = st.session_state.get("openai_platform_client")
+        if not oclient:
+            return "OpenAI chat is not configured. Set OPENAI_API_KEY or OPEN_AI_KEY in .env and restart the app."
+        chat_model = embed_config.get_openai_chat_model_name(mid) or os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
+        try:
+            resp = oclient.chat.completions.create(
+                model=chat_model,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=800,
+            )
+            return resp.choices[0].message.content
+        except Exception as e:
+            return f"OpenAI API error: {e}"
+    # Azure OpenAI
     client = st.session_state.get("client")
     if not client:
-        return "No chat client configured."
+        return "No Azure chat client configured. Set Azure OpenAI variables in .env, or choose OpenAI / Ollama in the sidebar."
     deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
     resp = client.chat.completions.create(
         model=deployment,
@@ -368,10 +384,27 @@ atexit.register(cleanup_session)
 # ============================================================================
 
 # Default model selection (from config/env)
+if "embedding_provider" not in st.session_state:
+    st.session_state.embedding_provider = embed_config.infer_embedding_provider_from_env()
+_allowed_providers = [p["id"] for p in embed_config.list_embedding_provider_choices()]
+if st.session_state.embedding_provider not in _allowed_providers:
+    st.session_state.embedding_provider = _allowed_providers[0]
+
 if "selected_embedding_id" not in st.session_state:
     st.session_state.selected_embedding_id = os.getenv("EMBED_MODEL", "azure_ada")
 if "selected_llm_id" not in st.session_state:
     st.session_state.selected_llm_id = embed_config.get_default_llm_id()
+
+# Align embedding + LLM with current provider (before init and on every rerun)
+_prov = st.session_state.embedding_provider
+_emb_opts = embed_config.get_embedding_options_for_provider(_prov)
+_emb_ids = [o["id"] for o in _emb_opts]
+if _emb_ids and st.session_state.selected_embedding_id not in _emb_ids:
+    st.session_state.selected_embedding_id = _emb_ids[0]
+_llm_opts = embed_config.get_llm_options_for_provider(_prov)
+_llm_ids = [o["id"] for o in _llm_opts]
+if _llm_ids and st.session_state.selected_llm_id not in _llm_ids:
+    st.session_state.selected_llm_id = _llm_ids[0]
 
 if 'initialized' not in st.session_state:
     with st.spinner("🚀 Initializing RAG system..."):
@@ -380,12 +413,22 @@ if 'initialized' not in st.session_state:
             qdrant_client = get_qdrant_client()
             embeddings = get_embeddings_model(st.session_state.get("selected_embedding_id"))
             
-            # Initialize Azure OpenAI for chat (used when LLM is Azure)
-            az_model_client, client, _ = set_env()
+            # Azure OpenAI for chat (when LLM = Azure); optional if you use only OpenAI.com or Ollama
+            az_model_client, client = None, None
+            try:
+                az_model_client, client, _ = set_env()
+            except Exception:
+                pass
             
-            # Validate components
-            if not all([az_model_client, client, embeddings, qdrant_client]):
-                raise ValueError("Failed to initialize required components")
+            # OpenAI.com API (platform.openai.com) for chat + optional embeddings
+            openai_platform_client = None
+            if embed_config.get_openai_api_key():
+                import openai as openai_sdk
+                openai_platform_client = openai_sdk.OpenAI(api_key=embed_config.get_openai_api_key())
+            
+            # Validate: Qdrant + embeddings always required; Azure client optional
+            if not embeddings or not qdrant_client:
+                raise ValueError("Failed to initialize Qdrant or embeddings")
             
             # Health check
             try:
@@ -402,6 +445,7 @@ if 'initialized' not in st.session_state:
             # Store in session state
             st.session_state.az_model_client = az_model_client
             st.session_state.client = client
+            st.session_state.openai_platform_client = openai_platform_client
             st.session_state.embeddings = embeddings
             st.session_state.qdrant = qdrant_client
             st.session_state.session_manager = session_manager
@@ -520,37 +564,67 @@ with st.sidebar:
         </div>
     """, unsafe_allow_html=True)
     
-    # Model selection (embedding + answer)
+    # Model selection: provider first, then filtered embedding + answer models
     st.markdown("### ⚙️ Models")
-    embed_opts = embed_config.get_embedding_options()
+    provider_choices = embed_config.list_embedding_provider_choices()
+    prov_labels = [c["label"] for c in provider_choices]
+    prov_ids = [c["id"] for c in provider_choices]
+    if st.session_state.embedding_provider not in prov_ids:
+        st.session_state.embedding_provider = prov_ids[0]
+    prov_idx = prov_ids.index(st.session_state.embedding_provider)
+    selected_prov_label = st.selectbox(
+        "Embedding / answer provider",
+        options=prov_labels,
+        index=prov_idx,
+        key="embedding_provider_select",
+        help="Azure: Ada embeddings + Azure/Ollama chat. OpenAI: OpenAI embeddings + OpenAI/Ollama chat. Local: BGE-M3 + Ollama only.",
+    )
+    new_prov = prov_ids[prov_labels.index(selected_prov_label)]
+    prov_changed = new_prov != st.session_state.embedding_provider
+    st.session_state.embedding_provider = new_prov
+
+    embed_opts = embed_config.get_embedding_options_for_provider(new_prov)
     embed_labels = [o["label"] for o in embed_opts]
     embed_ids = [o["id"] for o in embed_opts]
-    current_embed_id = st.session_state.get("selected_embedding_id") or embed_ids[0]
-    embed_idx = embed_ids.index(current_embed_id) if current_embed_id in embed_ids else 0
-    new_embed_label = st.selectbox(
-        "Embedding model",
-        options=embed_labels,
-        index=embed_idx,
-        key="embedding_selector",
-    )
-    new_embed_id = embed_ids[embed_labels.index(new_embed_label)]
-    if new_embed_id != st.session_state.get("selected_embedding_id"):
-        st.session_state.selected_embedding_id = new_embed_id
-        st.session_state.embeddings = get_embeddings_model(new_embed_id)
-    
-    llm_opts = embed_config.get_llm_options()
+    if not embed_ids:
+        st.caption("No embedding models for this provider.")
+    else:
+        if prov_changed or st.session_state.selected_embedding_id not in embed_ids:
+            st.session_state.selected_embedding_id = embed_ids[0]
+            if st.session_state.get("initialized"):
+                st.session_state.embeddings = get_embeddings_model(embed_ids[0])
+        current_embed_id = st.session_state.get("selected_embedding_id") or embed_ids[0]
+        embed_idx = embed_ids.index(current_embed_id) if current_embed_id in embed_ids else 0
+        new_embed_label = st.selectbox(
+            "Embedding model",
+            options=embed_labels,
+            index=embed_idx,
+            key="embedding_selector",
+        )
+        new_embed_id = embed_ids[embed_labels.index(new_embed_label)]
+        if new_embed_id != st.session_state.get("selected_embedding_id"):
+            st.session_state.selected_embedding_id = new_embed_id
+            if st.session_state.get("initialized"):
+                st.session_state.embeddings = get_embeddings_model(new_embed_id)
+
+    llm_opts = embed_config.get_llm_options_for_provider(new_prov)
     llm_labels = [o["label"] for o in llm_opts]
     llm_ids = [o["id"] for o in llm_opts]
-    current_llm_id = st.session_state.get("selected_llm_id") or llm_ids[0]
-    llm_idx = llm_ids.index(current_llm_id) if current_llm_id in llm_ids else 0
-    selected_llm_label = st.selectbox(
-        "Answer model",
-        options=llm_labels,
-        index=llm_idx,
-        key="llm_selector",
-    )
-    if selected_llm_label in llm_labels:
-        st.session_state.selected_llm_id = llm_ids[llm_labels.index(selected_llm_label)]
+    if not llm_ids:
+        st.caption("No answer models for this provider.")
+    else:
+        if prov_changed or st.session_state.selected_llm_id not in llm_ids:
+            st.session_state.selected_llm_id = llm_ids[0]
+        current_llm_id = st.session_state.get("selected_llm_id") or llm_ids[0]
+        llm_idx = llm_ids.index(current_llm_id) if current_llm_id in llm_ids else 0
+        selected_llm_label = st.selectbox(
+            "Answer model",
+            options=llm_labels,
+            index=llm_idx,
+            key="llm_selector",
+        )
+        if selected_llm_label in llm_labels:
+            st.session_state.selected_llm_id = llm_ids[llm_labels.index(selected_llm_label)]
     
     st.markdown("---")
     st.markdown("### 📁 Select Collection")
@@ -586,6 +660,44 @@ with st.sidebar:
                     st.write("**Files:**")
                     for file in stats['files']:
                         st.write(f"• {file}")
+    
+    # Remove Qdrant collection (vectors only; disk files under data/ are unchanged)
+    folders_for_delete = get_available_folders()
+    with st.expander("🗑️ Remove collection", expanded=False):
+        st.warning(
+            "Deletes the **Qdrant collection** and **all indexed vectors**. "
+            "The collection disappears from this list. Files on disk (e.g. under `data/`) are **not** deleted."
+        )
+        if not folders_for_delete:
+            st.caption("No collections match the current embedding dimension — nothing to remove.")
+        else:
+            coll_to_delete = st.selectbox(
+                "Collection to delete",
+                options=folders_for_delete,
+                key="delete_collection_select",
+                help="Full Qdrant collection name (same as in Filter by collection).",
+            )
+            confirm_delete = st.checkbox(
+                "I understand this cannot be undone",
+                key="delete_collection_confirm",
+            )
+            if st.button(
+                "Delete this collection",
+                type="primary",
+                disabled=not confirm_delete,
+                key="delete_collection_button",
+            ):
+                if not st.session_state.get("initialized") or not hasattr(st.session_state, "qdrant"):
+                    st.error("App is not ready. Wait for initialization to finish.")
+                else:
+                    try:
+                        delete_qdrant_collection(st.session_state.qdrant, coll_to_delete)
+                        if st.session_state.get("selected_folder") == coll_to_delete:
+                            st.session_state.selected_folder = "All Folders"
+                        st.success(f"Deleted collection: **{coll_to_delete}**")
+                        st.rerun()
+                    except Exception as e:
+                        st.error(f"Failed to delete collection: {e}")
     
     st.markdown("---")
     

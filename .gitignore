@@ -75,6 +75,11 @@ docs/_build/
 .pybuilder/
 target/
 
+state/reports/*.txt
+state/reports/*.json
+state/*.json
+sessions/*.json
+test/
 # Jupyter Notebook
 .ipynb_checkpoints
 
@@ -82,6 +87,8 @@ target/
 profile_default/
 ipython_config.py
 
+docs/M1_Requirements_Response.md
+docs/User_Guide.md
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
 #   intended to run in multiple environments; otherwise, check them in:

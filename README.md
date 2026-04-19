@@ -1,6 +1,8 @@
 # Eva Research AI
 
-RAG-based document Q&A: ingest PDFs/DOCX, chunk, embed, store in Qdrant, and answer with **Azure OpenAI** or **Ollama** (local). Streamlit UI with configurable embeddings, answer models, session history, and collection (folder) isolation.
+RAG-based document Q&A: ingest PDFs/DOCX, chunk, embed, store in Qdrant, and answer with **Azure OpenAI**, **OpenAI.com API**, or **Ollama** (local). Streamlit UI with configurable embeddings, answer models, session history, and collection (folder) isolation.
+
+**New to the project?** See **[docs/User_Guide.md](docs/User_Guide.md)** — step-by-step install (Git, Python, VS Code, Docker) and **three configuration paths**: **A)** local only (BGE-M3 + Ollama, no cloud keys), **B)** Azure OpenAI, **C)** OpenAI.com API key.
 
 ---
 
@@ -44,8 +46,9 @@ Every chunk in Qdrant has: `collection`, `source_path`, `doc_id`, `page_start`, 
 
 - **Docker & Docker Compose** (for recommended setup).
 - **Python 3.11+** (if running locally).
-- **Azure OpenAI** (for embeddings and/or chat): endpoint, API key, deployment name.
-- **Ollama** (optional): for local answer models; pull `qwen2.5:7b-instruct` and `llama3.1:8b` (or `llama3.1:8b-instruct` if available).
+- **Azure OpenAI** (optional, Path B): endpoint, API key, deployment — for embeddings and/or chat.
+- **OpenAI.com API** (optional, Path C): `OPENAI_API_KEY` or **`OPEN_AI_KEY`** (same purpose) from [platform.openai.com](https://platform.openai.com) — for embeddings and/or chat. In the Streamlit sidebar, pick **OpenAI (API)** under **Embedding / answer provider** to see OpenAI embedding models and OpenAI + Ollama answer options.
+- **Ollama** (Path A or optional): local answer models; pull `qwen2.5:7b-instruct` and `llama3.1:8b`.
 
 ---
 
@@ -74,8 +77,13 @@ AZURE_OPENAI_MODEL=gpt-4.1
 CHUNK_SIZE=1200
 CHUNK_OVERLAP=150
 
-# Embedding: azure_ada (1536 dim) or bge_m3 (1024 dim)
+# Embedding: azure_ada (1536) | openai_small / openai_ada (1536, OpenAI.com) | bge_m3 (1024, local)
 EMBED_MODEL=azure_ada
+
+# OpenAI.com API (optional — Path C; see docs/User_Guide.md)
+# OPENAI_API_KEY=sk-...   # or OPEN_AI_KEY=sk-... (accepted synonym)
+# OPENAI_CHAT_MODEL=gpt-4o-mini
+# OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 
 # Vector DB (use host when running scripts on host)
 VECTOR_DB_URL=http://localhost:6333
@@ -85,6 +93,7 @@ QDRANT_COLLECTION_PREFIX=rag_
 OLLAMA_BASE_URL=http://localhost:11434
 LOCAL_LLM_MODEL_PRIMARY=qwen2.5:7b-instruct
 LOCAL_LLM_MODEL_SECONDARY=llama3.1:8b-instruct
+# DEFAULT_LLM: azure | openai | ollama_qwen2.5 | ollama_llama3.1
 DEFAULT_LLM=azure
 ```
 
@@ -232,7 +241,10 @@ Place at least one PDF or DOCX under `data/<collection_name>/` (e.g. `data/hydro
 | `VECTOR_DB_URL` / `QDRANT_URL` | Qdrant HTTP URL. |
 | `QDRANT_COLLECTION_PREFIX` | Prefix for Qdrant collection names (e.g. `rag_` → `rag_hydrogen_books`). |
 | `OLLAMA_BASE_URL` | Ollama API URL. |
-| `DEFAULT_LLM` | `azure`, `ollama_qwen2.5`, or `ollama_llama3.1`. |
+| `DEFAULT_LLM` | `azure`, `openai`, `ollama_qwen2.5`, or `ollama_llama3.1`. |
+| `OPENAI_API_KEY` / `OPEN_AI_KEY` | OpenAI.com secret key (Path C); either variable works. |
+| `OPENAI_CHAT_MODEL` | Chat model id, e.g. `gpt-4o-mini`. |
+| `OPENAI_EMBEDDING_MODEL` | Embedding model, e.g. `text-embedding-3-small` (with `EMBED_MODEL=openai_small`). |
 | `STATE_ROOT` | Directory for ingestion logs and reports (e.g. `state` or `/state` in Docker). |
 | `DATA_ROOT` | Root for collection folders (e.g. `data` or `/data` in Docker). |
 
@@ -263,7 +275,8 @@ Eva_Rsearch_AI/
 ├── state/                  # Ingestion logs, state/reports/
 ├── sessions/               # Streamlit session data
 └── docs/
-    └── M1_Requirements_Response.md
+    ├── User_Guide.md          # Step-by-step setup (Git, Python, VS Code, Docker, .env)
+    └── M1_Requirements.md
 ```
 
 ---

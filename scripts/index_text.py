@@ -100,6 +100,16 @@ def get_qdrant_client() -> QdrantClient:
     )
 
 
+def delete_qdrant_collection(client: QdrantClient, collection_name: str) -> None:
+    """
+    Permanently delete a Qdrant collection and all its vectors.
+    Does not remove files from disk (e.g. under data/).
+    """
+    if not collection_name or not str(collection_name).strip():
+        raise ValueError("collection_name is required")
+    client.delete_collection(collection_name=collection_name.strip())
+
+
 def get_collection_names_for_dimension(client: QdrantClient, dimension: int) -> List[str]:
     """Return collection names whose vector size matches the given dimension (for current embedding).
     If get_collection() fails (e.g. client/server schema mismatch), returns all collection names
@@ -891,6 +901,13 @@ Examples:
             
     except Exception as e:
         logger.error(f"Unexpected error: {e}", exc_info=True)
+        err_str = str(e).lower()
+        if "refused" in err_str or "10061" in err_str or "connect" in err_str:
+            logger.error(
+                "Connection refused: Qdrant may not be running. Start it with:\n"
+                "  docker compose -f docker_compose.yaml up -d qdrant\n"
+                "If running on host (not in Docker), set: $env:QDRANT_URL = \"http://localhost:6333\""
+            )
         sys.exit(1)
 
 
