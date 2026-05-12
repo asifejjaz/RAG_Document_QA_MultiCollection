@@ -22,10 +22,9 @@ from scripts.index_text import (
     get_qdrant_client,
     get_embeddings_model,
     get_collection_names_for_dimension,
+    get_collection_vector_size,
     delete_qdrant_collection,
     process_file,
-    generate_file_metadata,
-    generate_doc_id
 )
 from scripts import embed_config
 
@@ -33,17 +32,11 @@ from scripts.report_inventory import (
     generate_inventory_report
 )
 
-# Import your existing RAG functions (keeping backward compatibility)
-from scripts.rg_pipeline import set_env, retrieve_context, RAGRetriever, create_rag_agent
-
-
+from scripts.azure_openai_env import set_env
 # Session management
 from sessions.sessionManager import SessionManager
 
 load_dotenv()
-
-# One folder = one Qdrant collection. Default name for first/legacy collection.
-DEFAULT_COLLECTION_NAME = "research_papers"
 
 
 def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str:
@@ -112,6 +105,10 @@ def get_available_folders(embedding_id: Optional[str] = None) -> List[str]:
         return []
 
 
+# Leaf chunks only (matches dense retrieval in scripts/rg_pipeline.py)
+_LEAF_FILTER = {"must": [{"key": "is_leaf", "match": {"value": True}}]}
+
+
 def retrieve_context_with_folder(
     query: str,
     qdrant_client,
@@ -127,16 +124,26 @@ def retrieve_context_with_folder(
     try:
         eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
         dimension = embed_config.get_embedding_dimension(eid)
+        if collection_name:
+            vs = get_collection_vector_size(qdrant_client, collection_name)
+            if vs is not None and vs != dimension:
+                st.error(
+                    f"Embedding dimension mismatch: collection **{collection_name}** uses vector size **{vs}**, "
+                    f"but the selected embedding expects **{dimension}**. Change the embedding model in the sidebar "
+                    "or choose a collection built with the same model."
+                )
+                return []
         query_vector = embeddings.embed_query(query)
         all_results = []
 
         if collection_name:
-            # Single collection: search directly (skip get_collection to avoid client/server schema mismatch)
+            # Single collection: dense search on leaf chunks
             try:
                 results = qdrant_client.search(
                     collection_name=collection_name,
                     query_vector=query_vector,
                     limit=top_k,
+                    query_filter=_LEAF_FILTER,
                     with_payload=True
                 )
                 all_results = [(r, collection_name) for r in results]
@@ -151,6 +158,7 @@ def retrieve_context_with_folder(
                         collection_name=coll_name,
                         query_vector=query_vector,
                         limit=top_k,
+                        query_filter=_LEAF_FILTER,
                         with_payload=True
                     )
                     all_results.extend([(r, coll_name) for r in results])
@@ -245,10 +253,16 @@ def get_folder_statistics(folder_name: str) -> Dict:
         return {}
 
 
-def ingest_file_to_collection(file_path: str, collection_name: str, embedding_id: Optional[str] = None) -> Dict:
+def ingest_file_to_collection(
+    file_path: str,
+    collection_name: str,
+    embedding_id: Optional[str] = None,
+    logical_file_name: Optional[str] = None,
+) -> Dict:
     """
     Ingest a file using the new refactored system.
     Uses selected embedding from UI (or embedding_id) so collection dimension matches.
+    logical_file_name: original upload filename (stored in Qdrant metadata instead of temp path name).
     """
     try:
         eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL")
@@ -261,6 +275,7 @@ def ingest_file_to_collection(file_path: str, collection_name: str, embedding_id
             embeddings_model=embeddings_model,
             client=qdrant_client,
             embedding_id=eid,
+            logical_file_name=logical_file_name,
         )
         
         return result
@@ -449,7 +464,6 @@ if 'initialized' not in st.session_state:
             st.session_state.embeddings = embeddings
             st.session_state.qdrant = qdrant_client
             st.session_state.session_manager = session_manager
-            st.session_state.agent = None
             st.session_state.selected_folder = "All Folders"
             
             # Load or create session
@@ -543,17 +557,6 @@ def get_collection_stats(collection_name: Optional[str] = None):
         return {"total_documents": 0, "total_chunks": 0, "total_folders": 0, "vector_size": 1536}
 
 # ============================================================================
-# ASYNC HELPERS
-# ============================================================================
-
-async def reset_agent():
-    """Reset the agent instance"""
-    st.session_state.agent = await create_rag_agent(
-        st.session_state.az_model_client,
-        buffer_size=10
-    )
-
-# ============================================================================
 # SIDEBAR
 # ============================================================================
 
@@ -643,6 +646,20 @@ with st.sidebar:
     if selected_folder != st.session_state.get('selected_folder'):
         st.session_state.selected_folder = selected_folder
     
+    if (
+        selected_folder != "All Folders"
+        and st.session_state.get("initialized")
+        and hasattr(st.session_state, "qdrant")
+    ):
+        _eid = st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        _dim = embed_config.get_embedding_dimension(_eid)
+        _vs = get_collection_vector_size(st.session_state.qdrant, selected_folder)
+        if _vs is not None and _vs != _dim:
+            st.warning(
+                f"⚠️ Collection vector size is **{_vs}** but the selected embedding expects **{_dim}**. "
+                "Chat retrieval will be blocked until they match."
+            )
+    
     # Show folder details
     if selected_folder != "All Folders":
         with st.expander("📊 Collection Details", expanded=False):
@@ -719,7 +736,6 @@ with st.sidebar:
             st.session_state.current_session_id = new_session
             st.session_state.messages = []
             st.session_state.messages_loaded = True
-            asyncio.run(reset_agent())
             st.rerun()
         except Exception as e:
             st.error(f"Failed to create new session: {e}")
@@ -771,7 +787,6 @@ with st.sidebar:
                             "content": msg["content"]
                         })
                     st.session_state.messages_loaded = True
-                    asyncio.run(reset_agent())
                     st.rerun()
             
             with col2:
@@ -781,7 +796,6 @@ with st.sidebar:
                         st.session_state.current_session_id = new_session
                         st.session_state.messages = []
                         st.session_state.messages_loaded = True
-                        asyncio.run(reset_agent())
                     st.session_state.session_manager.delete_session(session['session_id'])
                     st.rerun()
             
@@ -855,13 +869,19 @@ with st.sidebar:
                             tmp_path = tmp_file.name
                         
                         # Ingest using refactored system
-                        result = ingest_file_to_collection(tmp_path, target_collection)
+                        result = ingest_file_to_collection(
+                            tmp_path,
+                            target_collection,
+                            logical_file_name=uploaded_file.name,
+                        )
                         
                         # Clean up
                         os.unlink(tmp_path)
                         
                         if result.get('status') == 'success':
                             st.success(f"✅ {uploaded_file.name}: {result.get('chunks_upserted', 0)} chunks")
+                        elif result.get('status') == 'skipped':
+                            st.warning(f"⚠️ {uploaded_file.name}: {result.get('error', 'Skipped')}")
                         else:
                             st.error(f"❌ {uploaded_file.name}: {result.get('error', 'Failed')}")
                         
@@ -981,10 +1001,13 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                     messages = [
                         {
                             "role": "system",
-                            "content": """You are Eva, a knowledgeable Research Assistant.
-                            
-                            Provide clear answers based on the context. Cite sources when relevant.
-                            Be concise and professional."""
+                            "content": """You are Eva, a research assistant. Use ONLY the provided context.
+
+                            Rules:
+                            - If the answer is not supported by the context, reply with I do not have enough information, do not make up an answer.
+                            - Cite every factual claim with source file name and page, e.g. [filename, p. 12]
+                            - Do not invent numbers, citations, or sources
+                            - Be concise and professional"""
                         },
                         {
                             "role": "user",

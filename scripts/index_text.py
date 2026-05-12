@@ -26,6 +26,9 @@ from langchain_openai import AzureOpenAIEmbeddings
 from qdrant_client import QdrantClient
 
 from scripts import embed_config
+
+# Minimum total characters across PDF pages to consider extraction successful (scanned PDFs ~0)
+MIN_EXTRACTED_TEXT_CHARS = int(os.getenv("MIN_EXTRACTED_TEXT_CHARS", "40"))
 from qdrant_client.models import (
     Distance, VectorParams, PointStruct,
     PayloadSchemaType, TextIndexParams,
@@ -129,6 +132,15 @@ def get_collection_names_for_dimension(client: QdrantClient, dimension: int) -> 
         return sorted(names)
     # When no dimension-matched names (e.g. get_collection failed for all), show all collections
     return sorted(fallback_names) if fallback_names else []
+
+
+def get_collection_vector_size(client: QdrantClient, collection_name: str) -> Optional[int]:
+    """Return configured vector size for a collection, or None if unavailable."""
+    try:
+        info = client.get_collection(collection_name)
+        return int(info.config.params.vectors.size)
+    except Exception:
+        return None
 
 
 def _qdrant_collection_name(collection_name: str) -> str:
@@ -264,16 +276,25 @@ def extract_text_from_file(file_path: str) -> List[Dict[str, Any]]:
     return pages
 
 
+def total_extracted_text_length(pages: List[Dict[str, Any]]) -> int:
+    """Sum of stripped text lengths across pages (detect empty / scanned PDFs)."""
+    return sum(len((p.get("text") or "").strip()) for p in pages)
+
+
 # ============================================================================
 # DOCUMENT ID & METADATA GENERATION
 # ============================================================================
 
-def generate_doc_id(file_path: str) -> str:
-    """Generate unique document ID from file path"""
-    return hashlib.md5(str(file_path).encode()).hexdigest()
+def generate_doc_id(stable_key: str) -> str:
+    """Generate unique document ID from a stable logical key (path or collection|name|size)."""
+    return hashlib.md5(stable_key.encode()).hexdigest()
 
 
-def generate_file_metadata(file_path: str, collection_name: str) -> Dict[str, Any]:
+def generate_file_metadata(
+    file_path: str,
+    collection_name: str,
+    logical_file_name: Optional[str] = None,
+) -> Dict[str, Any]:
     """
     Generate comprehensive metadata for a file
     
@@ -285,27 +306,27 @@ def generate_file_metadata(file_path: str, collection_name: str) -> Dict[str, An
         Metadata dictionary
     """
     file_path = Path(file_path)
-    
-    # Determine collection folder from file path
-    # Assumes structure: /data-root/collection_name/file.pdf
-    parts = file_path.parts
-    
-    # Find the data root index (parent of collection folder)
-    collection_folder = None
-    for i, part in enumerate(parts):
-        if i < len(parts) - 1 and parts[i + 1] == file_path.parent.name:
-            collection_folder = parts[i + 1]
-            break
-    
+    display_name = logical_file_name or file_path.name
+    size = file_path.stat().st_size if file_path.exists() else 0
+    # Stable id for uploads (temp path changes each time) — collection + display name + size
+    id_key = (
+        str(file_path.resolve())
+        if not logical_file_name
+        else f"{collection_name}|{display_name}|{size}"
+    )
+    stem = Path(display_name).stem
+    ext = Path(display_name).suffix
+
     return {
-        'doc_id': generate_doc_id(str(file_path)),
-        'file_name': file_path.name,
-        'file_stem': file_path.stem,
-        'file_extension': file_path.suffix,
-        'file_size': file_path.stat().st_size if file_path.exists() else 0,
-        'collection': collection_name,
+        'doc_id': generate_doc_id(id_key),
+        'file_name': display_name,
+        'file_stem': stem,
+        'file_extension': ext,
+        'file_size': size,
+        'collection': collection_name,  # logical folder name; Qdrant upsert overwrites with full collection id
         'folder_name': file_path.parent.name,
         'full_path': str(file_path.absolute()),
+        'ingest_source_path': f"{collection_name}/{display_name}",
         'created_at': datetime.utcnow().isoformat()
     }
 
@@ -566,7 +587,11 @@ def embed_and_upsert(
         page_num = chunk['page_number']
         page_start = page_end = page_num
         chunk_id = f"{doc_id}:{page_start}:{idx}"
-        source_path = file_metadata.get('full_path') or file_metadata.get('file_name', '')
+        source_path = (
+            file_metadata.get('ingest_source_path')
+            or file_metadata.get('full_path')
+            or file_metadata.get('file_name', '')
+        )
         payload = {
             **file_metadata,
             'collection': collection_name,
@@ -616,10 +641,12 @@ def process_file(
     embeddings_model,
     client: QdrantClient,
     embedding_id: Optional[str] = None,
+    logical_file_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """
     Complete pipeline: extract -> chunk -> embed -> upsert.
     embedding_id is used to set collection vector size (from embed_config); default from env EMBED_MODEL.
+    logical_file_name: original upload filename (preserved in metadata when ingesting from a temp path).
     """
     embedding_id = embedding_id or os.getenv("EMBED_MODEL")
     vector_size = embed_config.get_embedding_dimension(embedding_id)
@@ -633,15 +660,28 @@ def process_file(
     
     # Extract text
     pages = extract_text_from_file(file_path)
+    display = logical_file_name or Path(file_path).name
     if not pages:
         return {
-            'file_name': Path(file_path).name,
+            'file_name': display,
             'status': 'failed',
-            'error': 'Text extraction failed'
+            'error': 'Text extraction failed',
+            'ingest_flag': 'extraction_error',
+        }
+
+    if total_extracted_text_length(pages) < MIN_EXTRACTED_TEXT_CHARS:
+        return {
+            'file_name': display,
+            'status': 'skipped',
+            'error': (
+                'No extractable text (likely scanned PDF or image-only). '
+                'Enable OCR (e.g. Tesseract) or Azure Document Intelligence, or supply a text-based PDF.'
+            ),
+            'ingest_flag': 'zero_text_pdf',
         }
     
     # Generate metadata
-    file_metadata = generate_file_metadata(file_path, collection_name)
+    file_metadata = generate_file_metadata(file_path, collection_name, logical_file_name=logical_file_name)
     
     # Chunk
     chunks = hierarchical_chunk_pages(pages, file_metadata)
@@ -649,7 +689,8 @@ def process_file(
         return {
             'file_name': file_metadata['file_name'],
             'status': 'failed',
-            'error': 'Chunking failed'
+            'error': 'Chunking failed',
+            'ingest_flag': 'chunking_failed',
         }
     
     # Embed and upsert
@@ -701,8 +742,9 @@ def process_collection(
     logger.info(f"{'='*80}")
     logger.info(f"Found {len(files)} files")
     
-    # Setup collection (use prefixed name for Qdrant)
-    setup_collection(client, qdrant_name, recreate=False)
+    embedding_id = os.getenv("EMBED_MODEL")
+    vector_size = embed_config.get_embedding_dimension(embedding_id)
+    setup_collection(client, qdrant_name, recreate=False, vector_size=vector_size)
     
     # Process each file (process_file will apply prefix to get qdrant name)
     results = []
@@ -715,13 +757,14 @@ def process_collection(
     
     # Summary
     successful = sum(1 for r in results if r.get('status') == 'success')
-    failed = len(results) - successful
+    skipped = sum(1 for r in results if r.get('status') == 'skipped')
+    failed = sum(1 for r in results if r.get('status') == 'failed')
     
     logger.info(f"\n{'='*80}")
     logger.info(f"Collection Processing Complete")
     logger.info(f"{'='*80}")
     logger.info(f"Files processed: {successful}/{len(files)}")
-    logger.info(f"Failed: {failed}")
+    logger.info(f"Skipped (no text): {skipped}, Failed: {failed}")
     logger.info(f"Total chunks: {total_chunks}")
     
     # Save report to state
@@ -731,6 +774,7 @@ def process_collection(
         'collection': collection_name,
         'status': 'success',
         'files_processed': successful,
+        'files_skipped': skipped,
         'files_failed': failed,
         'total_chunks': total_chunks,
         'results': results
@@ -820,6 +864,7 @@ def save_ingestion_report(collection_name: str, results: List[Dict[str, Any]]) -
         'timestamp': datetime.utcnow().isoformat(),
         'files_processed': len([r for r in results if r.get('status') == 'success']),
         'files_failed': len([r for r in results if r.get('status') == 'failed']),
+        'files_skipped': len([r for r in results if r.get('status') == 'skipped']),
         'total_chunks': sum(r.get('chunks_upserted', 0) for r in results),
         'results': results
     }

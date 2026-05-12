@@ -149,7 +149,8 @@ def aggregate_inventory(log_files: List[Path]) -> Dict[str, Any]:
             elif status == 'skipped':
                 coll_data['files_skipped'].append({
                     'file_name': file_name,
-                    'reason': result.get('reason', 'Unknown'),
+                    'reason': result.get('error', result.get('reason', 'Unknown')),
+                    'ingest_flag': result.get('ingest_flag'),
                     'timestamp': timestamp
                 })
                 overall['files_skipped'] += 1

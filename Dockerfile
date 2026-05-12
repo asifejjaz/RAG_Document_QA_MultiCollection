@@ -23,11 +23,13 @@ COPY . .
 # Set working directory to where app.py is
 WORKDIR /app/frontend
 
-# Create necessary directories
+# Create necessary directories and non-root user (Issue 10 / prod hardening)
 RUN mkdir -p /state/reports && \
     mkdir -p /app/frontend/sessions && \
     chmod -R 755 /state && \
-    chmod -R 755 /app/frontend/sessions
+    chmod -R 755 /app/frontend/sessions && \
+    useradd --create-home --uid 10001 --shell /bin/bash raguser && \
+    chown -R raguser:raguser /app /state
 
 # Expose ports
 EXPOSE 8501
@@ -39,6 +41,8 @@ ENV PYTHONUNBUFFERED=1 \
     DATA_ROOT=/data \
     STATE_ROOT=/state \
     PYTHONPATH=/app
+
+USER raguser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \

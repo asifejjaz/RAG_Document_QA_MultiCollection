@@ -22,4 +22,4 @@ requests
 llama-index-core==0.10.11
 pyautogen[openai]==0.2.18
 sentence-transformers>=2.2.0
-
+1

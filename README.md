@@ -33,12 +33,40 @@ RAG-based document Q&A: ingest PDFs/DOCX, chunk, embed, store in Qdrant, and ans
 | `scripts/preview_extract.py` | Preview extracted text (PDF pages or DOCX head). |
 | `scripts/query_chunks.py` | Retrieve top-k chunks for a query (no LLM). |
 | `scripts/check_numbers.py` | Numeric preservation check → `state/reports/numeric_issues.json`. |
-| `scripts/answer_local.py` | Retrieve chunks → call Ollama → answer with citations. |
+| `scripts/export_sample_qdrant_payload.py` | Export one point’s payload as JSON (client sample artifact). |
+| `scripts/azure_openai_env.py` | Shared Azure OpenAI client factory (`set_env`) for Streamlit. |
+| `scripts/answer_local.py` | **CLI only:** retrieve chunks → call Ollama → answer with citations. |
 | `scripts/run_script_tests_in_order.py` | Run all scripts in order and append a test report. |
 
-### Data model (chunk payload)
+### RAG entry points (canonical)
 
-Every chunk in Qdrant has: `collection`, `source_path`, `doc_id`, `page_start`, `page_end`, `chunk_index`, `chunk_id` (format: `doc_id:page_start:chunk_index`), `text`.
+| Path | Role |
+|------|------|
+| **`frontend/app.py`** | **Primary UI:** `retrieve_context_with_folder()` (dense, leaf chunks) + `generate_answer()`. |
+| **`scripts/answer_local.py`** | Offline / Ollama CLI; not used by Streamlit chat. |
+
+### Data model (chunk payload — canonical)
+
+Values are written by **`scripts/index_text.py`** (`embed_and_upsert`). Retrieval and inventory should treat this as the source of truth.
+
+| Field | Type (logical) | Description |
+|-------|----------------|-------------|
+| `collection` | string | Qdrant collection id (includes `QDRANT_COLLECTION_PREFIX` when set). |
+| `source_path` | string | Logical path `"{collection}/{file_name}"` or disk path after CLI ingest. |
+| `doc_id` | string | MD5 of stable key (path or `collection\|name\|size` for uploads). |
+| `file_name` | string | Original filename (preserved for Streamlit uploads). |
+| `page_number`, `page_start`, `page_end` | int | Page alignment for the chunk. |
+| `chunk_index` | int | Index within the document. |
+| `chunk_id` | string | `{doc_id}:{page_start}:{chunk_index}`. |
+| `text` | string | Chunk text. |
+| `is_leaf` | bool | **true** for child chunks used in retrieval filters. |
+| `parent_id`, `parent_text` | optional | Hierarchical chunking (LlamaIndex). |
+| `chunk_total` | int | Total chunks for the document. |
+| `ingest_source_path` | string | Same as logical `source_path` prefix for uploads. |
+
+**Sample payload:** with Qdrant running, `python scripts/export_sample_qdrant_payload.py --collection YOUR_COLLECTION --out sample_payload.json`
+
+**Scanned PDFs:** extraction yielding &lt; `MIN_EXTRACTED_TEXT_CHARS` (default 40) is recorded as `status: skipped`, `ingest_flag: zero_text_pdf` in ingestion logs.
 
 ---
 
@@ -63,7 +91,9 @@ cd Eva_Rsearch_AI
 
 ### 2. Environment file
 
-Copy or create `.env` in the project root. Required and common variables:
+Copy **[`.env.example`](.env.example)** to `.env` in the project root (or create `.env` manually). Required and common variables:
+
+**Production-style Docker:** see **[`deploy/README-CLIENT.md`](deploy/README-CLIENT.md)** and **`docker-compose.prod.yaml`** (no `.:/app` bind mount; non-root app user in **`Dockerfile`**).
 
 ```env
 # Azure OpenAI (required for Azure embeddings/chat)
