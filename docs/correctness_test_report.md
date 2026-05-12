@@ -5,7 +5,6 @@
 | Item | Value |
 |------|-------|
 | Date | 2026-05-10 |
-| Commit / tag | 44de71f |
 | EMBED_MODEL | text-embedding-ada-002 |
 | Qdrant collection(s) | rag_hydrogen_books |
 | Answer model | Azure OpenAI deployment `my-gpt-4.1` |

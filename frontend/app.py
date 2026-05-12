@@ -429,11 +429,7 @@ if 'initialized' not in st.session_state:
             embeddings = get_embeddings_model(st.session_state.get("selected_embedding_id"))
             
             # Azure OpenAI for chat (when LLM = Azure); optional if you use only OpenAI.com or Ollama
-            az_model_client, client = None, None
-            try:
-                az_model_client, client, _ = set_env()
-            except Exception:
-                pass
+            _, client, _ = set_env()
             
             # OpenAI.com API (platform.openai.com) for chat + optional embeddings
             openai_platform_client = None
@@ -454,8 +450,8 @@ if 'initialized' not in st.session_state:
                 st.error(f"⚠️ Qdrant connection issue: {e}")
                 st.stop()
             
-            # Initialize session manager
-            session_manager = SessionManager(sessions_dir="sessions")
+            # Initialize session manager with absolute path for Docker + local consistency
+            session_manager = SessionManager(sessions_dir=Path(__file__).parent / "sessions")
             
             # Store in session state
             st.session_state.az_model_client = az_model_client
@@ -724,7 +720,7 @@ with st.sidebar:
         
         if current and hasattr(st.session_state, 'session_manager'):
             try:
-                st.session_state.session_manager._save_session(current)
+                st.session_state.session_manager.save_session(current)
                 session = st.session_state.session_manager.get_session(current)
                 if session and session.get('message_count', 0) == 0:
                     st.session_state.session_manager.delete_session(current)
@@ -857,6 +853,7 @@ with st.sidebar:
                 
                 total = len(uploaded_files)
                 for idx, uploaded_file in enumerate(uploaded_files):
+                    tmp_path = None
                     try:
                         status_text.text(f"Processing {uploaded_file.name}...")
                         
@@ -875,18 +872,22 @@ with st.sidebar:
                             logical_file_name=uploaded_file.name,
                         )
                         
-                        # Clean up
-                        os.unlink(tmp_path)
-                        
                         if result.get('status') == 'success':
                             st.success(f"✅ {uploaded_file.name}: {result.get('chunks_upserted', 0)} chunks")
                         elif result.get('status') == 'skipped':
                             st.warning(f"⚠️ {uploaded_file.name}: {result.get('error', 'Skipped')}")
                         else:
                             st.error(f"❌ {uploaded_file.name}: {result.get('error', 'Failed')}")
-                        
+                            
                     except Exception as e:
                         st.error(f"Error processing {uploaded_file.name}: {e}")
+                    finally:
+                        # Always cleanup temp file
+                        if tmp_path:
+                            try:
+                                os.unlink(tmp_path)
+                            except OSError:
+                                pass
                     
                     progress_bar.progress((idx + 1) / total)
                 

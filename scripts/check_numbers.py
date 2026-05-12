@@ -189,7 +189,7 @@ def check_chunk(
 def main():
     parser = argparse.ArgumentParser(description="Numeric preservation check (chunk vs source page)")
     parser.add_argument("--collection", type=str, required=True, help="Logical collection name (prefix applied if set in env)")
-    parser.add_argument("--state", type=str, default="/state", help="State directory for output")
+    parser.add_argument("--state", type=str, default=os.getenv("STATE_ROOT", "./state"), help="State directory for output")
     parser.add_argument(
         "--data-root",
         type=str,

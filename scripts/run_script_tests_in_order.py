@@ -29,8 +29,8 @@ from dotenv import load_dotenv
 load_dotenv(PROJECT_ROOT / ".env")
 
 REPORT_FILE = Path(__file__).parent / "test_report_ollama.txt"
-STATE_DIR = os.getenv("STATE_ROOT", "state")
-DATA_ROOT = os.getenv("DATA_ROOT", "data")
+STATE_DIR = os.getenv("STATE_ROOT", os.getenv("STATE_DIR", "./state"))
+DATA_ROOT = os.getenv("DATA_ROOT", "./data")
 DEFAULT_COLLECTION = "hydrogen_books"
 
 

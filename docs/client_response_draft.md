@@ -51,10 +51,7 @@ The full pipeline is: ingestion (`scripts/index_text.py`) → retrieval (`retrie
 
 **Detail:** `README.md` now has a single **canonical payload** table aligned with `scripts/index_text.py` / `embed_and_upsert` (fields: `collection`, `source_path`, `doc_id`, `file_name`, `page_number`, `page_start`, `page_end`, `chunk_index`, `chunk_id`, `text`, `is_leaf`, `parent_id`, `parent_text`, `chunk_total`, `ingest_source_path`, etc.). The legacy `rg_pipeline.py` is gone, eliminating parallel schemas.
 
-**Sample payload** — fins sample_payload.json exported from a live `rag_hydrogen_books` collection.
-
-
-The file `sample_payload.json` is committed in the repository root for immediate inspection. You can also regenerate anytime with:
+**Sample payload** — The file `sample_payload.json` is committed in the repository root for immediate inspection. You can also regenerate anytime with:
 
 ```bash
 python scripts/export_sample_qdrant_payload.py --collection rag_hydrogen_books --out sample_payload.json
@@ -209,8 +206,3 @@ Original estimate was a 5–7 day hardening window. All ten review items are now
 
 ---
 
-## Next steps
-
-- Merge this response and the updated documentation (`README.md`, `docs/`) into the main branch.
-- Await client validation of the sample payload and correctness report.
-- Plan Phase 2 work (OCR, auth, optional hybrid retrieval).

@@ -87,7 +87,7 @@ class Config:
     EMBEDDING_RETRY_BASE_DELAY_SEC = float(os.getenv("EMBEDDING_RETRY_BASE_DELAY_SEC", "10.0"))
     
     # State directory (for reports); prefer STATE_ROOT then STATE_DIR
-    STATE_DIR = os.getenv("STATE_ROOT") or os.getenv("STATE_DIR", "/state")
+    STATE_DIR = os.getenv("STATE_ROOT") or os.getenv("STATE_DIR", "./state")
 
 
 # ============================================================================

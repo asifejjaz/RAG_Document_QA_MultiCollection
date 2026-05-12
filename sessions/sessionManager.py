@@ -186,16 +186,23 @@ class SessionManager:
         print("="*60 + "\n")
     
     def _save_session(self, session_id: str):
-        """Save session to disk"""
+        """Save session to disk (internal)"""
         if session_id not in self.sessions:
             return
-        
         session_file = self.sessions_dir / f"{session_id}.json"
         try:
             with open(session_file, 'w', encoding='utf-8') as f:
                 json.dump(self.sessions[session_id], f, indent=2, ensure_ascii=False)
         except Exception as e:
             print(f"Error saving session {session_id}: {e}")
+
+    def save_session(self, session_id: Optional[str] = None) -> bool:
+        """Public API: save a session to disk."""
+        sid = session_id or self.current_session
+        if not sid or sid not in self.sessions:
+            return False
+        self._save_session(sid)
+        return True
     
     def export_session(self, session_id: Optional[str] = None, export_path: Optional[str] = None) -> str:
         """Export session history to a text file"""

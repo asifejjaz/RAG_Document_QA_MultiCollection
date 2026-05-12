@@ -3,18 +3,23 @@
 import os
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from dotenv import load_dotenv
+load_dotenv()
+
 from scripts.index_text import get_qdrant_client, get_embeddings_model
 from scripts.azure_openai_env import set_env
+
+# Build collection name with prefix (consistent with other scripts)
+prefix = (os.getenv("QDRANT_COLLECTION_PREFIX") or "").strip()
+collection = f"{prefix.rstrip('_')}_hydrogen_books" if prefix else "hydrogen_books"
 
 
 def main():
     embedding_id = os.getenv("EMBED_MODEL", "azure_ada")
     embeddings = get_embeddings_model(embedding_id)
     client = get_qdrant_client()
-    az_model_client, chat_client, _ = set_env()
+    _, chat_client, _ = set_env()
     deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-
-    collection = "rag_hydrogen_books"
     queries = [
         "What are the main forms of hydrogen discussed for bunkering?",
         "Which port is described as aiming to become a green hydrogen hub?",
