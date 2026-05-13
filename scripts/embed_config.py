@@ -243,6 +243,16 @@ def is_openai_platform(llm_id: Optional[str]) -> bool:
     return False
 
 
+def is_azure(llm_id: Optional[str]) -> bool:
+    """True if llm_id refers to Azure OpenAI chat."""
+    if not llm_id:
+        return False
+    for e in _llm_registry():
+        if e["id"] == llm_id:
+            return e["type"] == "azure"
+    return False
+
+
 def get_openai_chat_model_name(llm_id: Optional[str]) -> Optional[str]:
     """Return OpenAI chat model name (e.g. gpt-4o-mini) for the given llm_id."""
     if not llm_id:

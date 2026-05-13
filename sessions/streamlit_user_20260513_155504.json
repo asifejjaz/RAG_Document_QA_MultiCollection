@@ -1,0 +1,39 @@
+{
+  "session_id": "streamlit_user_20260513_155504",
+  "user_name": "streamlit_user",
+  "created_at": "2026-05-13T15:55:04.354273",
+  "last_active": "2026-05-13T15:59:45.448136",
+  "message_count": 6,
+  "history": [
+    {
+      "role": "user",
+      "content": "what is the green hydrogen advantages",
+      "timestamp": "2026-05-13T15:55:04.381160"
+    },
+    {
+      "role": "assistant",
+      "content": "I couldn't find relevant information in 'rag_hydrogen'.",
+      "timestamp": "2026-05-13T15:55:11.059260"
+    },
+    {
+      "role": "user",
+      "content": "what are the green hydrogen preparation steps\n\n",
+      "timestamp": "2026-05-13T15:56:12.590058"
+    },
+    {
+      "role": "assistant",
+      "content": "No Azure chat client configured. Set Azure OpenAI variables in .env, or choose OpenAI / Ollama in the sidebar.",
+      "timestamp": "2026-05-13T15:56:14.031520"
+    },
+    {
+      "role": "user",
+      "content": "what are the green hydrogen preparation steps\n\n",
+      "timestamp": "2026-05-13T15:59:44.308904"
+    },
+    {
+      "role": "assistant",
+      "content": "No Azure chat client configured. Set Azure OpenAI variables in .env, or choose OpenAI / Ollama in the sidebar.",
+      "timestamp": "2026-05-13T15:59:45.448125"
+    }
+  ]
+}

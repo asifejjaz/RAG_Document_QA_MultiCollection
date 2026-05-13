@@ -76,17 +76,31 @@ def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str
         except Exception as e:
             return f"OpenAI API error: {e}"
     # Azure OpenAI
-    client = st.session_state.get("client")
-    if not client:
-        return "No Azure chat client configured. Set Azure OpenAI variables in .env, or choose OpenAI / Ollama in the sidebar."
-    deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
-    resp = client.chat.completions.create(
-        model=deployment,
-        messages=messages,
-        temperature=0.7,
-        max_tokens=800,
-    )
-    return resp.choices[0].message.content
+    if embed_config.is_azure(mid):
+        client = st.session_state.get("client")
+        if not client:
+            try:
+                from scripts.azure_openai_env import get_azure_openai_client
+                client, _ = get_azure_openai_client()
+                st.session_state.client = client
+            except ImportError as e:
+                return f"Azure support unavailable: {e}. Install required packages or switch to OpenAI/Ollama."
+            except Exception as e:
+                return f"Failed to initialize Azure OpenAI client: {e}"
+        if not client:
+            return "No Azure chat client configured. Set Azure OpenAI variables in .env, or choose OpenAI / Ollama in the sidebar."
+        deployment = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME")
+        try:
+            resp = client.chat.completions.create(
+                model=deployment,
+                messages=messages,
+                temperature=0.7,
+                max_tokens=800,
+            )
+            return resp.choices[0].message.content
+        except Exception as e:
+            return f"Azure OpenAI API error: {e}"
+    return "Unknown LLM provider selected."
 
 
 def is_smalltalk(text: str) -> bool:

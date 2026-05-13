@@ -37,7 +37,7 @@ RUN mkdir -p /state/reports && \
     chown -R raguser:raguser /app /state
 
 # Expose ports
-EXPOSE 8501
+EXPOSE 8507
 EXPOSE 8000
 
 # Environment variables (can be overridden in docker-compose)
@@ -51,7 +51,7 @@ USER raguser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD curl -f http://localhost:8501/_stcore/health || exit 1
+    CMD curl -f http://localhost:8507/_stcore/health || exit 1
 
 # Default command (run Streamlit)
-CMD ["streamlit", "run", "app.py", "--server.port=8501", "--server.address=0.0.0.0"]
+CMD ["streamlit", "run", "app.py", "--server.port=8507", "--server.address=0.0.0.0"]
