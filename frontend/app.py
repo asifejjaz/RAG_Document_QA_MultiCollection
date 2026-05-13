@@ -8,6 +8,7 @@ if str(project_root) not in sys.path:
 
 import streamlit as st
 import time
+import re
 from datetime import datetime, timedelta
 import os
 import tempfile
@@ -30,7 +31,6 @@ from scripts.report_inventory import (
     generate_inventory_report
 )
 
-from scripts.azure_openai_env import set_env
 # Session management
 from sessions.sessionManager import SessionManager
 
@@ -87,6 +87,22 @@ def generate_answer(messages: List[Dict], model_id: Optional[str] = None) -> str
         max_tokens=800,
     )
     return resp.choices[0].message.content
+
+
+def is_smalltalk(text: str) -> bool:
+    """Return True for greetings and smalltalk that shouldn't use RAG."""
+    if not text:
+        return False
+    cleaned = text.strip().lower()
+    if len(cleaned) <= 3:
+        return cleaned in {"hi", "hey", "yo"}
+    patterns = [
+        r"^(hi|hello|hey|yo|hiya|sup|greetings)\b",
+        r"^(good (morning|afternoon|evening))\b",
+        r"^(how are you|how's it going|how are things)\b",
+        r"^(who are you|what can you do|help)\b",
+    ]
+    return any(re.match(p, cleaned) for p in patterns)
 
 # ============================================================================
 # INTEGRATION HELPERS (one folder = one Qdrant collection)
@@ -301,7 +317,7 @@ st.set_page_config(
 # ============================================================================
 
 if 'theme' not in st.session_state:
-    st.session_state.theme = 'light'
+    st.session_state.theme = 'system'
 
 def get_theme_css(theme):
     """Generate CSS based on current theme"""
@@ -321,6 +337,14 @@ def get_theme_css(theme):
                 --chat-assistant-bg: #0d1117;
             }
             .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div {
+                background: var(--bg-secondary) !important;
+                color: var(--text-primary) !important;
+            }
+            section[data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] a { color: var(--accent-primary) !important; }
+            section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] label { color: var(--text-secondary) !important; }
             .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-assistant-bg) !important; border-radius: 12px !important; padding: 12px !important; margin: 8px 0 !important; color: var(--text-primary) !important; }
             .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
             .law-firm-header { background: linear-gradient(90deg,#06263e 0%, #0b3a66 100%) !important; color: #dbeeff !important; padding: 18px 16px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 2px solid rgba(255,255,255,0.04) !important; }
@@ -329,12 +353,18 @@ def get_theme_css(theme):
             .source-box { background-color: rgba(8,20,30,0.6) !important; border-left: 4px solid #2b6cb0 !important; padding: 10px; margin: 10px 0; border-radius: 6px; font-size: 0.9rem; color: #cfe9ff !important; }
             .folder-badge { background: linear-gradient(135deg, #2a5298 0%, #1e3a6b 100%); color: #e6f2ff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
             section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background: linear-gradient(180deg,#061018 0%, #071426 100%) !important; color: #dbeeff !important; }
+            section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] .stMarkdown * { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] [data-testid="stSelectbox"] * { color: var(--text-primary) !important; }
+            .stSelectbox div[data-baseweb="select"] > div { background: rgba(255,255,255,0.04) !important; }
+            .stTextInput>div>input, .stTextArea>div>textarea { background: rgba(255,255,255,0.04) !important; color: #e6eef3 !important; border: 1px solid rgba(255,255,255,0.08) !important; }
+            [data-testid="stChatInput"] textarea { background: rgba(255,255,255,0.04) !important; color: #e6eef3 !important; border: 1px solid rgba(255,255,255,0.08) !important; }
             textarea, input[type="text"], .stTextArea>div>textarea, .stTextInput>div>input { background: rgba(255,255,255,0.02) !important; color: #ffffff !important; border: 1px solid var(--border-color) !important; border-radius: 10px !important; padding: 10px !important; }
             .stButton>button { background: linear-gradient(180deg,#0f394f 0%, #072b3f 100%) !important; color: #e6eef3 !important; border: 1px solid rgba(255,255,255,0.04) !important; }
             #MainMenu {visibility: hidden;} footer {visibility: hidden;}
         </style>
         """
-    else:
+    elif theme == 'light':
         return """
         <style>
             html { color-scheme: light; }
@@ -350,15 +380,77 @@ def get_theme_css(theme):
                 --chat-assistant-bg: #ffffff;
             }
             .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background: #f6f7fb !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] label, section[data-testid="stSidebar"] p, section[data-testid="stSidebar"] span { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] .stMarkdown * { color: var(--text-primary) !important; }
             .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-user-bg) !important; border-radius: 10px !important; padding: 10px !important; margin: 5px 0 !important; color: var(--text-primary) !important; }
             .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
             .law-firm-header { background-color: #003876 !important; color: white !important; padding: 15px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 3px solid #002850 !important; }
             .main-title { font-size: 2.5em; font-weight: bold; text-align: center; background: linear-gradient(135deg, #003876 0%, #0056b3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
             .source-box { background-color: #e8f4f8 !important; border-left: 4px solid #667eea !important; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.9em; color: #1a1a2e !important; }
             .folder-badge { background: linear-gradient(135deg, #003876 0%, #0056b3 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
+            .stSelectbox div[data-baseweb="select"] > div { background: #ffffff !important; color: var(--text-primary) !important; border: 1px solid var(--border-color) !important; }
+            .stSelectbox div[data-baseweb="select"] * { color: var(--text-primary) !important; }
+            .stTextInput>div>input, .stTextArea>div>textarea { background: #ffffff !important; color: var(--text-primary) !important; border: 1px solid var(--border-color) !important; }
+            [data-testid="stChatInput"] textarea { background: #ffffff !important; color: var(--text-primary) !important; border: 1px solid var(--border-color) !important; }
             #MainMenu {visibility: hidden;} footer {visibility: hidden;}
         </style>
         """
+    # system
+    return """
+    <style>
+        html { color-scheme: light dark; }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-primary: #0b0f12;
+                --bg-secondary: #0d1117;
+                --text-primary: #e6eef3;
+                --text-secondary: #aebfcc;
+                --accent-primary: #66b2ff;
+                --accent-secondary: #2aa2ff;
+                --border-color: rgba(255,255,255,0.04);
+                --chat-user-bg: #1c2635;
+                --chat-assistant-bg: #0d1117;
+            }
+            .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background: var(--bg-secondary) !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] a { color: var(--accent-primary) !important; }
+            section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] { color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] label { color: var(--text-secondary) !important; }
+            .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-assistant-bg) !important; border-radius: 12px !important; padding: 12px !important; margin: 8px 0 !important; color: var(--text-primary) !important; }
+            .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
+            .law-firm-header { background: linear-gradient(90deg,#06263e 0%, #0b3a66 100%) !important; color: #dbeeff !important; padding: 18px 16px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 2px solid rgba(255,255,255,0.04) !important; }
+            .law-firm-title { font-size: 1.05rem; font-weight: 700; letter-spacing: 0.6px; }
+            .main-title { font-size: 2.4rem; font-weight: 800; text-align: center; background: linear-gradient(135deg, #2aa2ff 10%, #66b2ff 60%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 6px 18px rgba(10,20,30,0.6); margin-bottom: 10px; }
+            .source-box { background-color: rgba(8,20,30,0.6) !important; border-left: 4px solid #2b6cb0 !important; padding: 10px; margin: 10px 0; border-radius: 6px; font-size: 0.9rem; color: #cfe9ff !important; }
+            .folder-badge { background: linear-gradient(135deg, #2a5298 0%, #1e3a6b 100%); color: #e6f2ff; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
+            .stButton>button { background: linear-gradient(180deg,#0f394f 0%, #072b3f 100%) !important; color: #e6eef3 !important; border: 1px solid rgba(255,255,255,0.04) !important; }
+        }
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg-primary: #ffffff;
+                --bg-secondary: #f0f2f6;
+                --text-primary: #262730;
+                --text-secondary: #666666;
+                --accent-primary: #003876;
+                --accent-secondary: #0056b3;
+                --border-color: #e0e0e0;
+                --chat-user-bg: #f0f2f6;
+                --chat-assistant-bg: #ffffff;
+            }
+            .main, .stApp, body, html { background-color: var(--bg-primary) !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"], section[data-testid="stSidebar"] > div { background: #f6f7fb !important; color: var(--text-primary) !important; }
+            section[data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+            .stChatMessage, [data-testid="stChatMessage"] { background-color: var(--chat-user-bg) !important; border-radius: 10px !important; padding: 10px !important; margin: 5px 0 !important; color: var(--text-primary) !important; }
+            .stChatMessage *, [data-testid="stChatMessage"] * { color: var(--text-primary) !important; }
+            .law-firm-header { background-color: #003876 !important; color: white !important; padding: 15px; margin: -1rem -1rem 1rem -1rem; font-family: "Georgia", serif; border-bottom: 3px solid #002850 !important; }
+            .main-title { font-size: 2.5em; font-weight: bold; text-align: center; background: linear-gradient(135deg, #003876 0%, #0056b3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+            .source-box { background-color: #e8f4f8 !important; border-left: 4px solid #667eea !important; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 0.9em; color: #1a1a2e !important; }
+            .folder-badge { background: linear-gradient(135deg, #003876 0%, #0056b3 100%); color: white; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem; display: inline-block; margin-bottom: 10px; }
+        }
+    </style>
+    """
 
 st.markdown(get_theme_css(st.session_state.theme), unsafe_allow_html=True)
 
@@ -426,8 +518,15 @@ if 'initialized' not in st.session_state:
             qdrant_client = get_qdrant_client()
             embeddings = get_embeddings_model(st.session_state.get("selected_embedding_id"))
             
-            # Azure OpenAI for chat (used when LLM is Azure)
-            az_model_client, client, _ = set_env()
+            # Azure OpenAI for chat (only if selected as LLM)
+            azure_client = None
+            if st.session_state.get("selected_llm_id") == "azure":
+                try:
+                    from scripts.azure_openai_env import get_azure_openai_client
+                    azure_client, _ = get_azure_openai_client()
+                except ImportError as e:
+                    st.error(f"Azure support unavailable: {e}. Install autogen-ext or switch to OpenAI/Ollama.")
+                    st.stop()
             
             # OpenAI.com API (platform.openai.com) for chat + optional embeddings
             openai_platform_client = None
@@ -452,8 +551,7 @@ if 'initialized' not in st.session_state:
             session_manager = SessionManager(sessions_dir=Path(__file__).resolve().parents[1] / "sessions")
             
             # Store in session state
-            st.session_state.az_model_client = az_model_client
-            st.session_state.client = client
+            st.session_state.client = azure_client
             st.session_state.openai_platform_client = openai_platform_client
             st.session_state.embeddings = embeddings
             st.session_state.qdrant = qdrant_client
@@ -972,16 +1070,29 @@ if prompt := st.chat_input("Ask a question about your documents..."):
                 # One folder = one Qdrant collection; pass that collection or None for "All Folders"
                 search_collection = None if folder_filter == "All Folders" else folder_filter
 
-                # Retrieve context
-                contexts = retrieve_context_with_folder(
-                    query=prompt,
-                    qdrant_client=st.session_state.qdrant,
-                    embeddings=st.session_state.embeddings,
-                    collection_name=search_collection,
-                    top_k=5
-                )
+                # Short-circuit greetings/smalltalk (no retrieval, no citations)
+                contexts = None
+                if is_smalltalk(prompt):
+                    smalltalk_msg = (
+                        "Hi! I'm Eva, your research assistant. "
+                        "Ask a question about your documents or choose a collection to search."
+                    )
+                    message_placeholder.markdown(smalltalk_msg)
+                    st.session_state.messages.append({"role": "assistant", "content": smalltalk_msg})
+                    st.session_state.session_manager.add_message("assistant", smalltalk_msg)
+                else:
+                    # Retrieve context
+                    contexts = retrieve_context_with_folder(
+                        query=prompt,
+                        qdrant_client=st.session_state.qdrant,
+                        embeddings=st.session_state.embeddings,
+                        collection_name=search_collection,
+                        top_k=5
+                    )
                 
-                if not contexts:
+                if contexts is None:
+                    pass
+                elif not contexts:
                     no_results_msg = f"I couldn't find relevant information"
                     if folder_filter != "All Folders":
                         no_results_msg += f" in '{folder_filter}'"

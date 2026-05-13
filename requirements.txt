@@ -1,4 +1,4 @@
-# Eva Rsearch AI - dependencies
+# Base requirements (CPU-only). For local embeddings with BGE-M3, use requirements-local.txt
 streamlit>=1.28.0,<1.30.0
 python-dotenv>=1.0.0,<2.0.0
 openai>=1.50.0,<2.0.0
@@ -8,8 +8,4 @@ qdrant-client==1.7.3
 llama-index-core==0.10.11
 pymupdf>=1.23.0,<1.25.0
 docx2txt>=0.8,<1.0
-autogen-ext==0.4.2
-autogen-agentchat==0.4.2
-autogen-core==0.4.2
 requests>=2.31.0,<3.0.0
-sentence-transformers>=2.2.0,<3.0.0

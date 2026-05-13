@@ -1,0 +1,6 @@
+# Optional local embedding requirements (BGE-M3)
+# WARNING: sentence-transformers pulls PyTorch and can require NVIDIA/CUDA libs on GPU images.
+# Use CPU-only torch in Docker if you need this.
+
+-r requirements.txt
+sentence-transformers>=2.2.0,<3.0.0

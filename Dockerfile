@@ -14,8 +14,13 @@ RUN apt-get update && apt-get install -y \
 # Copy requirements first for better caching
 COPY requirements.txt .
 
-# Install Python dependencies
+# Install Python dependencies (CPU-only base)
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Optional: Local embeddings (BGE-M3) require sentence-transformers which pulls PyTorch.
+# On GPU builds this may download NVIDIA/CUDA libraries and slow the build.
+# Uncomment only if you need local embeddings:
+# RUN pip install --no-cache-dir -r requirements-local.txt
 
 # Copy application code
 COPY . .
