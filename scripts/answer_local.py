@@ -21,6 +21,7 @@ load_dotenv()
 
 from scripts.index_text import get_qdrant_client, get_embeddings_model
 from scripts import embed_config
+from qdrant_client.models import Filter, FieldCondition, MatchValue
 
 
 PROMPT_RULE = (
@@ -52,10 +53,16 @@ def main():
             query_vector=query_vector,
             limit=args.topk,
             with_payload=True,
+            query_filter=Filter(must=[FieldCondition(key="is_leaf", match=MatchValue(value=True))])
         )
     except Exception as e:
         print(f"Error: {e}")
         sys.exit(1)
+
+    # If no relevant chunks, short-circuit per PROMPT_RULE
+    if not results:
+        print("NOT FOUND")
+        sys.exit(0)
 
     context_parts = []
     for r in results:

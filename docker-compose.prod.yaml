@@ -1,4 +1,6 @@
-# Production-oriented compose: no source bind-mount, pinned images, non-root app (see Dockerfile).
+---
+# Production-oriented compose: no source bind-mount, pinned images,
+# non-root app (see Dockerfile).
 # Usage:
 #   docker compose -f docker-compose.prod.yaml --env-file .env up -d --build
 #
@@ -37,7 +39,7 @@ services:
     volumes:
       - rag_data_prod:/data:ro
       - rag_state_prod:/state
-      - rag_sessions_prod:/app/frontend/sessions
+      - rag_sessions_prod:/app/sessions
     environment:
       - DATA_ROOT=/data
       - STATE_ROOT=/state
@@ -55,7 +57,7 @@ services:
 
   ollama:
     # Pin to a specific digest in production after `docker pull ollama/ollama`
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.5.7
     container_name: rag-ollama-prod
     ports:
       - "11434:11434"

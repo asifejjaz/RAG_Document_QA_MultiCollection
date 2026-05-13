@@ -1,0 +1,82 @@
+# Collection mapping for correctness evaluation
+# Maps collection names to lists of PDF filenames (relative to data/<collection>/)
+
+hydrogen_tech:
+  documents:
+    - "Hydrogen Bunkering at Ports by Eliseo Curcio.pdf"
+    - "Hydrogen bunkering 2.pdf"
+    - "hydrogen bunkering.pdf"
+    - "Hydrogen at ports.pdf"
+    - "Hydrogen ports 2.pdf"
+    - "Hydrogen Transportation.pdf"
+    - "Hydrogen transportation 2.pdf"
+    - "Electrolyzers.pdf"
+    - "Green Hydrogen Production by Water Electrolysis (Junbo Hou, Min Yang) (Z-Library).pdf"
+    - "Hydrogen with methane.pdf"
+    - "Challenges and Opportunities in Green Hydrogen Production (Paramvir Singh, Avinash K Agarwal etc.) (Z-Library).pdf"
+    - "Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf"
+    - "Renewable Hydrogen Technologies. Production, Purification, Storage, Applications and Safety (Luis M. Gandia, Gurutze Arzamendi (Ed.) etc.) (Z-Library).pdf"
+    - "Renewable Hydrogen Production (Dincer, Ibrahim, Ishaq, Haris) (Z-Library).pdf"
+    - "Green Hydrogen The Race to Success-Members.pdf"
+    - "Green Hydrogen the Race to Success-Members.pdf"
+    - "Green-Hydrogen-The-Race-to-Success.pdf"
+    - "Hydrogen Economy, The Fundamentals, Technology, Economics (Duncan Seddon) (Z-Library).pdf"
+    - "Understanding costs in hydrogen infrastructure networks.pdf"
+    - "Hydrogen Infrastructure Report.pdf"
+    - "Handbook of Hydrogen Storage - New Materials for Future Energy Storage (Michael Hirscher, Katsuhiko Hirose) (Z-Library).pdf"
+    - "Energy Storage (Advances in Renewable Energy Series) (Umakanta Sahoo) (Z-Library).pdf"
+    - "Energy, Environment and New Materials Volume 2 Hydrogen Storage for Sustainability (Marcel Van de Voorde (editor)) (Z-Library).pdf"
+    - "HYDROGEN-BASED POWER GENERATION.pdf"
+    - "Thermochemicalconversions ofmunicipalsolidwasteinto fuelsandchemicals.pdf"
+
+biofuels:
+  documents:
+    - "ethanol fromMSW.pdf"
+    - "ethanol from MSW.pdf"
+    - "Ethanol blending journal.pdf"
+    - "Green conversion of municipal solid wastes into fuels and chemicals.pdf"
+    - "Review of Second Generation Bioethanol Production.pdf"
+    - "GREENHOUSE GAS EMISSIONS FROM BIo ETHANOL AND BIO-DIESEL FUEL SUPPLY.pdf"
+    - "Bioethanol From Biorenewable, Economics.pdf"
+    - "Comparative Life Cycle Assessment of Bioethanol Production from Different Generations ofBiomass and Waste Feedstocks.pdf"
+    - "Comparison of biofuel life-cycle GHG emissions assessment tools.pdf"
+
+decarbonization:
+  documents:
+    - "LCFS Vs RFS.pdf"
+    - "LCFS and RFS.pdf"
+    - "Axsen_Wolinetz_LCFS_Review_Transport-Policy_2023.pdf"
+    - "Decarbonizing-Shipping-Challenges-and-Opportunities.pdf"
+    - "Decarbonization.pdf"
+    - "2023 Carbon Assessment.pdf"
+    - "Technologies and policies to decarbonize global industry Review and assessment of mitigation drivers through 2070.pdf"
+    - "sustainable-solutions-a-comprehensive-guide-for-sustainability-experts.pdf"
+    - "Climate change H2.pdf"
+    - "Clean investment US.pdf"
+    - "Clean Energy Market Analysis in the US.pdf"
+
+marine_fuels:
+  documents:
+    - "Alternative Fuels and Advanced Vehicle Technologies for Improved Environmental Performance Towards Zero Carbon Transportation (Richard Folkson, Steve Sapsford) (Z-Library).pdf"
+    - "The Shipping Industry Role in Global Emissions.pdf"
+    - "Renewable marine fuel production.pdf"
+    - "Renewable marine fuel production paper.pdf"
+    - "In-depth-Analysis-of-Maritime-Emission-Regulations-EEXI-and-CII-Frameworks.pdf"
+    - "deep-sea shipping using power-to-X fuels.pdf"
+    - "Hydrogen at ports.pdf"
+    - "Ammonia_ship_fuel_2020-11_web.pdf"
+    - "Ammonias-Double-Edged-Sword-Clean-Energy-or-Catastrophic-Risk.pdf"
+    - "AMMONIA PRODUCTION TECHNOLOGIES CAP 8 STORAGE.pdf"
+    - "Risk assessment of ammonia bunkering.pdf"
+    - "Adopting-Wind-Assisted-Ship-Propulsion-Technologies-as-Fleet-Retrofit.pdf"
+    - "wind-assisted ship propulsion.pdf"
+    - "Fuels Comparison.pdf"
+    - "Fuels-Biofuels-and-Efuels by Eliseo Curcio.pdf"
+
+fuel_cells:
+  documents:
+    - "Fuel cells.pdf"
+    - "propulsion system powered by batteries and solid oxide fuel cells.pdf"
+    - "Performance analysis of a fuel cells.pdf"
+    - "Thin-Film Catalysts for Proton Exchange Membrane Water Electrolyzers and Unitized Regenerative Fuel Cells (Peter Kúš) (Z-Library).pdf"
+    - "thermodynamic performances of solid oxide fuel cell.pdf"

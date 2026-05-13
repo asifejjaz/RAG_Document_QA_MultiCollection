@@ -1,0 +1,45 @@
+{
+  "version": "1.0",
+  "description": "Ground truth QA pairs for RAG correctness evaluation. Each QA pair has expected answer and expected source pages.",
+  "collections": {
+    "hydrogen_books": {
+      "documents": {
+        "Hydrogen Bunkering at Ports by Eliseo Curcio.pdf": {
+          "qa_pairs": [
+            {
+              "id": "T1",
+              "question": "What are the main forms of hydrogen discussed for bunkering?",
+              "expected_answer": "The document discusses compressed hydrogen (CH2) and liquefied hydrogen (LH2) as the main forms used for bunkering. Compressed hydrogen is stored at high pressure, while liquefied hydrogen requires cryogenic storage at very low temperatures.",
+              "expected_sources": [
+                {"file": "Hydrogen Bunkering at Ports by Eliseo Curcio.pdf", "pages": [1, 2]}
+              ],
+              "type": "factual",
+              "difficulty": "easy"
+            },
+            {
+              "id": "T2",
+              "question": "Which port is described as aiming to become a green hydrogen hub?",
+              "expected_answer": "The Port of Hamburg is described as aiming to become a green hydrogen hub, with plans for hydrogen storage and refueling infrastructure to support maritime vessels.",
+              "expected_sources": [
+                {"file": "Hydrogen Bunkering at Ports by Eliseo Curcio.pdf", "pages": [8, 9]}
+              ],
+              "type": "factual",
+              "difficulty": "easy"
+            },
+            {
+              "id": "T3",
+              "question": "What are the safety or storage challenges of hydrogen bunkering?",
+              "expected_answer": "Key challenges include: hydrogen's high flammability and wide flammability range; leakage risk due to small molecule size; cryogenic storage complexity for liquefied hydrogen; material embrittlement from hydrogen ingress; high-pressure handling requirements; and the need for robust ventilation, detection, and safety systems.",
+              "expected_sources": [
+                {"file": "Hydrogen Bunkering at Ports by Eliseo Curcio.pdf", "pages": [3, 4, 14]}
+              ],
+              "type": "factual",
+              "difficulty": "medium"
+            }
+          ]
+        }
+      }
+    }
+  },
+  "notes": "Add QA pairs for additional documents following the same schema. See docs/correctness_multi_collection_report.md for evaluation methodology."
+}

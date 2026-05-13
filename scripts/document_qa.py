@@ -15,7 +15,7 @@ collection = f"{prefix.rstrip('_')}_hydrogen_books" if prefix else "hydrogen_boo
 
 
 def main():
-    embedding_id = os.getenv("EMBED_MODEL", "azure_ada")
+    embedding_id = os.getenv("EMBED_MODEL", "openai_small")
     embeddings = get_embeddings_model(embedding_id)
     client = get_qdrant_client()
     _, chat_client, _ = set_env()

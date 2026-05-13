@@ -57,7 +57,6 @@ def main():
     sample = {
         "id": points[0].id,
         "payload": dict(payload),
-        "note": "Truncated text in exports if you add a trim step; full schema in README.",
     }
     text = json.dumps(sample, indent=2, ensure_ascii=False)
     if args.out:

@@ -2,7 +2,7 @@
 
  Phase 1 Baseline System Design: 
  - Ingestion PDFs/DOCX, chunk, embed, store in Qdrant.
- - Answer with **Azure OpenAI**, **OpenAI API**, or **Ollama** (local).
+ - Answer with **OpenAI API**, or **Ollama** (local).
  -  Streamlit UI with configurable embeddings, answer with selected model, session history, and collection (folder) isolation.
 
 
@@ -12,17 +12,17 @@
 
 ### Features
 
-- **Ingestion:** Extract text from PDF/DOCX → hierarchical chunking → embed (Azure Ada or BGE-M3) → upsert to Qdrant with full metadata.
+- **Ingestion:** Extract text from PDF/DOCX → hierarchical chunking → embed (OpenAI Ada or BGE-M3) → upsert to Qdrant with full metadata.
 - **Retrieval:** Semantic search over one or all collections; top-k chunks with score, source, and page range.
-- **Answering:** Context-aware answers via Azure GPT or Ollama (Qwen, Llama) with citation rules.
+- **Answering:** Context-aware answers via OpenAI GPT or Ollama (Qwen, Llama) with citation rules.
 - **UI:** Streamlit app — select embedding model, answer model, and collection; chat with session persistence; ingest via upload; view inventory and reports.
 
 ### Components
 
 | Component        | Role |
 |-----------------|------|
-| **Qdrant**      | Vector store (one collection per “folder”). |
-| **rag-api**     | Streamlit app + ingestion/retrieval logic; runs embeddings (Azure or BGE-M3 in-process). |
+| **Qdrant**      | Vector store (one collection per "folder"). |
+| **rag-api**     | Streamlit app + ingestion/retrieval logic; runs embeddings (OpenAI or BGE-M3 in-process). |
 | **Ollama**      | Local LLM server (Qwen, Llama); optional. |
 | **Scripts**     | CLI for ingest, retrieval, inventory, preview, numeric check, local answer. |
 
@@ -76,9 +76,9 @@ Values are written by **`scripts/index_text.py`** (`embed_and_upsert`). Retrieva
 
 - **Docker & Docker Compose** (for recommended setup).
 - **Python 3.11+** (if running locally).
-- **Azure OpenAI** (optional, Path B): endpoint, API key, deployment — for embeddings and/or chat.
-- **OpenAI.com API** (optional, Path C): `OPENAI_API_KEY` or **`OPEN_AI_KEY`** (same purpose) from [platform.openai.com](https://platform.openai.com) — for embeddings and/or chat. In the Streamlit sidebar, pick **OpenAI (API)** under **Embedding / answer provider** to see OpenAI embedding models and OpenAI + Ollama answer options.
-- **Ollama** (Path A or optional): local answer models; pull `qwen2.5:7b-instruct` and `llama3.1:8b`.
+- **OpenAI.com API** (Path C — recommended): `OPENAI_API_KEY` from [platform.openai.com](https://platform.openai.com) — for embeddings and chat.
+- **Azure OpenAI** (optional alternative): endpoint, API key, deployment — for embeddings and/or chat.
+- **Ollama** (optional): local answer models; pull `qwen2.5:7b-instruct` and `llama3.1:8b`.
 
 ---
 
@@ -98,35 +98,33 @@ Copy **[`.env.example`](.env.example)** to `.env` in the project root (or create
 
 
 ```env
-# Azure OpenAI (required for Azure embeddings/chat)
-AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
-AZURE_OPENAI_API_KEY=your-key
-AZURE_OPENAI_DEPLOYMENT_NAME=your-deployment
-AZURE_OPENAI_API_VERSION=2024-12-01-preview
-AZURE_OPENAI_MODEL=gpt-4.1
+# OpenAI.com API (recommended — Path C)
+OPENAI_API_KEY=sk-...
+OPENAI_CHAT_MODEL=gpt-4o-mini
+OPENAI_EMBEDDING_MODEL=text-embedding-3-small
+
+# Embedding: openai_small (1536) | openai_ada (1536) | azure_ada (1536) | bge_m3 (1024, local)
+EMBED_MODEL=openai_small
+
+# Default LLM for answering: openai | ollama_qwen2.5 | ollama_llama3.1
+DEFAULT_LLM=openai
 
 # Chunking
 CHUNK_SIZE=1200
 CHUNK_OVERLAP=150
 
-# Embedding: azure_ada (1536) | openai_small / openai_ada (1536, OpenAI.com) | bge_m3 (1024, local)
-EMBED_MODEL=azure_ada
-
-# OpenAI.com API (optional — Path C; see docs/User_Guide.md)
-# OPEN_AI_KEY=sk-...   
-# OPENAI_CHAT_MODEL=gpt-4o-mini
-# OPENAI_EMBEDDING_MODEL=text-embedding-3-small
-
 # Vector DB (use host when running scripts on host)
 VECTOR_DB_URL=http://localhost:6333
 QDRANT_COLLECTION_PREFIX=rag_
 
-# Local LLM (Ollama)
+# Local LLM (Ollama) — optional
 OLLAMA_BASE_URL=http://localhost:11434
 LOCAL_LLM_MODEL_PRIMARY=qwen2.5:7b-instruct
 LOCAL_LLM_MODEL_SECONDARY=llama3.1:8b-instruct
-# DEFAULT_LLM: azure | openai | ollama_qwen2.5 | ollama_llama3.1
-DEFAULT_LLM=azure
+
+# Paths
+DATA_ROOT=./data
+STATE_ROOT=./state
 ```
 
 
@@ -268,14 +266,15 @@ Place at least one PDF or DOCX under `data/<collection_name>/` (e.g. `data/hydro
 | Variable | Description |
 |----------|-------------|
 | `CHUNK_SIZE`, `CHUNK_OVERLAP` | Chunking for ingestion. |
-| `EMBED_MODEL` | `azure_ada` or `bge_m3`. Must match collections you query (dimension: 1536 vs 1024). |
+| `EMBED_MODEL` | `openai_small` (default), `openai_ada`, `azure_ada`, or `bge_m3`. Must match collections you query (dimension: 1536 vs 1024). |
 | `VECTOR_DB_URL` / `QDRANT_URL` | Qdrant HTTP URL. |
 | `QDRANT_COLLECTION_PREFIX` | Prefix for Qdrant collection names (e.g. `rag_` → `rag_hydrogen_books`). |
 | `OLLAMA_BASE_URL` | Ollama API URL. |
-| `DEFAULT_LLM` | `azure`, `openai`, `ollama_qwen2.5`, or `ollama_llama3.1`. |
-|  `OPEN_AI_KEY` | OpenAI.com secret key (Path C); either variable works. |
+| `DEFAULT_LLM` | `openai` (default), `azure`, `ollama_qwen2.5`, or `ollama_llama3.1`. |
+| `OPENAI_API_KEY` | OpenAI.com secret key (required for OpenAI path). |
+| `OPEN_AI_KEY` | Alternative variable name for the OpenAI.com API key. |
 | `OPENAI_CHAT_MODEL` | Chat model id, e.g. `gpt-4o-mini`. |
-| `OPENAI_EMBEDDING_MODEL` | Embedding model, e.g. `text-embedding-3-small` (with `EMBED_MODEL=openai_small`). |
+| `OPENAI_EMBEDDING_MODEL` | Embedding model, e.g. `text-embedding-3-small` (used when `EMBED_MODEL=openai_small`). |
 | `STATE_ROOT` | Directory for ingestion logs and reports (e.g. `state` or `/state` in Docker). |
 | `DATA_ROOT` | Root for collection folders (e.g. `data` or `/data` in Docker). |
 
@@ -314,4 +313,4 @@ Eva_Rsearch_AI/
 
 ## One folder = one Qdrant collection
 
-Each “folder” in the UI is one Qdrant collection (e.g. `rag_hydrogen_books`). Benefits: search isolation, smaller retriever/LLM context, and clear UX. **“All Folders”** searches every collection and merges by score. Choose a single folder for focused answers; use All Folders to search everything. See `docs/M1_Requirements_Response.md` for full requirements and status.
+Each “folder” in the UI is one Qdrant collection (e.g. `rag_hydrogen_books`). Benefits: search isolation, smaller retriever/LLM context, and clear UX. **“All Folders”** searches every collection and merges by score. Choose a single folder for focused answers; use All Folders to search everything. See `docs/M1_Requirements.md` for full requirements and status.

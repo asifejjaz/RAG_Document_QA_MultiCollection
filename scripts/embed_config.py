@@ -117,14 +117,14 @@ def list_embedding_provider_choices() -> List[Dict[str, str]]:
 
 def infer_embedding_provider_from_env() -> str:
     """Initial sidebar provider from EMBED_MODEL / DEFAULT_LLM (only valid if keys exist)."""
-    em = os.getenv("EMBED_MODEL", "azure_ada")
+    em = os.getenv("EMBED_MODEL", "openai_small")
     if em in ("openai_small", "openai_ada"):
         if get_openai_api_key():
             return EMBEDDING_PROVIDER_OPENAI
         return EMBEDDING_PROVIDER_AZURE
     if em == "bge_m3":
         return EMBEDDING_PROVIDER_LOCAL
-    dl = os.getenv("DEFAULT_LLM", "azure")
+    dl = os.getenv("DEFAULT_LLM", "openai")
     if dl == "openai" and get_openai_api_key():
         return EMBEDDING_PROVIDER_OPENAI
     if dl in ("ollama_qwen2.5", "ollama_llama3.1"):
@@ -134,7 +134,7 @@ def infer_embedding_provider_from_env() -> str:
 
 def get_embedding_dimension(embedding_id: Optional[str] = None) -> int:
     """Return vector dimension for the given embedding id (or default)."""
-    rid = embedding_id or os.getenv("EMBED_MODEL", "azure_ada")
+    rid = embedding_id or os.getenv("EMBED_MODEL", "openai_small")
     for e in _embedding_registry():
         if e["id"] == rid:
             return e["dimension"]
@@ -144,9 +144,9 @@ def get_embedding_dimension(embedding_id: Optional[str] = None) -> int:
 def get_embeddings_model(embedding_id: Optional[str] = None):
     """
     Return a LangChain-compatible embedding client (embed_documents, embed_query).
-    Lazy-loads sentence-transformers so Azure-only startup stays fast.
+    Lazy-loads sentence-transformers so OpenAI-only startup stays fast.
     """
-    rid = embedding_id or os.getenv("EMBED_MODEL", "azure_ada")
+    rid = embedding_id or os.getenv("EMBED_MODEL", "openai_small")
     for e in _embedding_registry():
         if e["id"] != rid:
             continue
@@ -211,7 +211,7 @@ def get_llm_options() -> List[Dict[str, Any]]:
 
 
 def get_default_llm_id() -> str:
-    return os.getenv("DEFAULT_LLM", "azure")
+    return os.getenv("DEFAULT_LLM", "openai")
 
 
 def is_ollama(llm_id: Optional[str]) -> bool:

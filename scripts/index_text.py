@@ -308,12 +308,23 @@ def generate_file_metadata(
     file_path = Path(file_path)
     display_name = logical_file_name or file_path.name
     size = file_path.stat().st_size if file_path.exists() else 0
-    # Stable id for uploads (temp path changes each time) — collection + display name + size
-    id_key = (
-        str(file_path.resolve())
-        if not logical_file_name
-        else f"{collection_name}|{display_name}|{size}"
-    )
+    
+    # Stable id: for uploads use collection+name+size; for direct file paths include content hash
+    if logical_file_name:
+        id_key = f"{collection_name}|{display_name}|{size}"
+    else:
+        # Include file content hash to remain stable across renames/moves
+        try:
+            with open(file_path, 'rb') as f:
+                content_hash = hashlib.md5()
+                for chunk in iter(lambda: f.read(8192), b''):
+                    content_hash.update(chunk)
+                content_md5 = content_hash.hexdigest()
+            id_key = f"{file_path.resolve()}|{size}|{content_md5}"
+        except Exception:
+            # Fallback to path-only if file unreadable
+            id_key = str(file_path.resolve())
+    
     stem = Path(display_name).stem
     ext = Path(display_name).suffix
 

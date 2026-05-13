@@ -1,7 +1,8 @@
+---
 services:
   # Qdrant Vector Database
   qdrant:
-    image: qdrant/qdrant:latest
+    image: qdrant/qdrant:v1.12.5
     container_name: rag-qdrant
     ports:
       - "6333:6333"
@@ -35,8 +36,8 @@ services:
       - ./data:/data:ro
       # Mount state/output directory
       - rag_state:/state
-      # Mount sessions directory
-      - ./sessions:/app/frontend/sessions
+      # Mount sessions directory at project root
+      - ./sessions:/app/sessions
       # Mount app code so edits apply without rebuild (Streamlit auto-reloads)
       - .:/app
     environment:
@@ -51,11 +52,11 @@ services:
     restart: unless-stopped
     networks:
       - rag-network
-    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0 --server.port=8501 --server.address=0.0.0.0
+    command: streamlit run app.py --server.port=8501 --server.address=0.0.0.0
 
   # Ollama (local LLM)
   ollama:
-    image: ollama/ollama:latest
+    image: ollama/ollama:0.5.7
     container_name: rag-ollama
     ports:
       - "11434:11434"

@@ -4,6 +4,7 @@ Handles user sessions, conversation history, and session persistence
 """
 import json
 import os
+import tempfile
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
@@ -186,14 +187,29 @@ class SessionManager:
         print("="*60 + "\n")
     
     def _save_session(self, session_id: str):
-        """Save session to disk (internal)"""
+        """Save session to disk atomically"""
         if session_id not in self.sessions:
             return
+
         session_file = self.sessions_dir / f"{session_id}.json"
+        temp_file = None
         try:
-            with open(session_file, 'w', encoding='utf-8') as f:
+            # Write to temporary file first, then atomic rename
+            with tempfile.NamedTemporaryFile(
+                'w', encoding='utf-8', dir=self.sessions_dir,
+                delete=False, suffix='.tmp'
+            ) as f:
+                temp_file = f.name
                 json.dump(self.sessions[session_id], f, indent=2, ensure_ascii=False)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(temp_file, session_file)
         except Exception as e:
+            if temp_file and os.path.exists(temp_file):
+                try:
+                    os.unlink(temp_file)
+                except Exception:
+                    pass
             print(f"Error saving session {session_id}: {e}")
 
     def save_session(self, session_id: Optional[str] = None) -> bool:

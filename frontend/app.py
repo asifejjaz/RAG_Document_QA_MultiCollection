@@ -7,7 +7,6 @@ if str(project_root) not in sys.path:
     sys.path.insert(0, str(project_root))
 
 import streamlit as st
-import asyncio
 import time
 from datetime import datetime, timedelta
 import os
@@ -15,7 +14,6 @@ import tempfile
 from dotenv import load_dotenv
 import atexit
 from typing import Optional, List, Dict
-import json
 
 # Import from refactored scripts
 from scripts.index_text import (
@@ -98,7 +96,7 @@ def get_available_folders(embedding_id: Optional[str] = None) -> List[str]:
     """Get list of Qdrant collection names compatible with current embedding dimension."""
     try:
         qdrant_client = get_qdrant_client()
-        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "openai_small")
         dimension = embed_config.get_embedding_dimension(eid)
         return get_collection_names_for_dimension(qdrant_client, dimension)
     except Exception:
@@ -122,7 +120,7 @@ def retrieve_context_with_folder(
     Only searches collections whose vector size matches the current embedding dimension.
     """
     try:
-        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        eid = embedding_id or st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "openai_small")
         dimension = embed_config.get_embedding_dimension(eid)
         if collection_name:
             vs = get_collection_vector_size(qdrant_client, collection_name)
@@ -406,7 +404,7 @@ if st.session_state.embedding_provider not in _allowed_providers:
     st.session_state.embedding_provider = _allowed_providers[0]
 
 if "selected_embedding_id" not in st.session_state:
-    st.session_state.selected_embedding_id = os.getenv("EMBED_MODEL", "azure_ada")
+    st.session_state.selected_embedding_id = os.getenv("EMBED_MODEL", "openai_small")
 if "selected_llm_id" not in st.session_state:
     st.session_state.selected_llm_id = embed_config.get_default_llm_id()
 
@@ -428,8 +426,8 @@ if 'initialized' not in st.session_state:
             qdrant_client = get_qdrant_client()
             embeddings = get_embeddings_model(st.session_state.get("selected_embedding_id"))
             
-            # Azure OpenAI for chat (when LLM = Azure); optional if you use only OpenAI.com or Ollama
-            _, client, _ = set_env()
+            # Azure OpenAI for chat (used when LLM is Azure)
+            az_model_client, client, _ = set_env()
             
             # OpenAI.com API (platform.openai.com) for chat + optional embeddings
             openai_platform_client = None
@@ -450,8 +448,8 @@ if 'initialized' not in st.session_state:
                 st.error(f"⚠️ Qdrant connection issue: {e}")
                 st.stop()
             
-            # Initialize session manager with absolute path for Docker + local consistency
-            session_manager = SessionManager(sessions_dir=Path(__file__).parent / "sessions")
+            # Initialize session manager (use project-root sessions directory)
+            session_manager = SessionManager(sessions_dir=Path(__file__).resolve().parents[1] / "sessions")
             
             # Store in session state
             st.session_state.az_model_client = az_model_client
@@ -647,7 +645,7 @@ with st.sidebar:
         and st.session_state.get("initialized")
         and hasattr(st.session_state, "qdrant")
     ):
-        _eid = st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "azure_ada")
+        _eid = st.session_state.get("selected_embedding_id") or os.getenv("EMBED_MODEL", "openai_small")
         _dim = embed_config.get_embedding_dimension(_eid)
         _vs = get_collection_vector_size(st.session_state.qdrant, selected_folder)
         if _vs is not None and _vs != _dim:
@@ -904,7 +902,8 @@ with st.sidebar:
             try:
                 with st.spinner("Generating inventory report..."):
                     # Use refactored report system
-                    report = generate_inventory_report("/state")
+                    state_dir = os.getenv("STATE_ROOT", "./state")
+                    report = generate_inventory_report(state_dir)
                     
                     st.markdown("### Inventory Summary")
                     overall = report['overall']

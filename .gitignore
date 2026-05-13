@@ -78,7 +78,6 @@ target/
 state/reports/*.txt
 state/reports/*.json
 state/*.json
-sessions/*.json
 test/
 # Jupyter Notebook
 .ipynb_checkpoints

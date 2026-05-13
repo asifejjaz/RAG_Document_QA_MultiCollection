@@ -25,9 +25,9 @@ WORKDIR /app/frontend
 
 # Create necessary directories and non-root user (Issue 10 / prod hardening)
 RUN mkdir -p /state/reports && \
-    mkdir -p /app/frontend/sessions && \
+    mkdir -p /app/sessions && \
     chmod -R 755 /state && \
-    chmod -R 755 /app/frontend/sessions && \
+    chmod -R 755 /app/sessions && \
     useradd --create-home --uid 10001 --shell /bin/bash raguser && \
     chown -R raguser:raguser /app /state
 
