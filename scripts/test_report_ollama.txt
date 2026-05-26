@@ -1,0 +1,1259 @@
+
+================================================================================
+RUN: 1. Ingestion (index_text.py)
+Time: 2026-05-22T00:27:49.164255
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/index_text.py --data-root data --collection hydrogen_books
+Return code: 1
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:25:01,827 - INFO - 
+================================================================================
+2026-05-22 00:25:01,828 - INFO - Processing Collection: hydrogen_books
+2026-05-22 00:25:01,828 - INFO - ================================================================================
+2026-05-22 00:25:01,828 - INFO - Found 1 files
+2026-05-22 00:25:02,417 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:25:02,418 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:25:02,418 - INFO - 
+================================================================================
+2026-05-22 00:25:02,419 - INFO - Processing: data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:25:02,419 - INFO - ================================================================================
+2026-05-22 00:25:02,588 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:25:02,590 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:25:02,734 - INFO - Extracted 14 pages from Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:25:02,934 - INFO - Created 59 hierarchical chunks
+2026-05-22 00:25:03,118 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+2026-05-22 00:25:03,119 - INFO - Generating embeddings for 59 chunks (batch_size=20, delay=1.0s)...
+2026-05-22 00:25:03,808 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:03,809 - INFO - Retrying request to /embeddings in 0.458316 seconds
+2026-05-22 00:25:04,471 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:04,472 - INFO - Retrying request to /embeddings in 0.876753 seconds
+2026-05-22 00:25:05,543 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:05,544 - WARNING - Embedding rate limited (429), retry 1/5 after 10.0s: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/doc
+2026-05-22 00:25:16,312 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:16,312 - INFO - Retrying request to /embeddings in 0.399849 seconds
+2026-05-22 00:25:16,985 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:16,986 - INFO - Retrying request to /embeddings in 0.767350 seconds
+2026-05-22 00:25:18,046 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:18,048 - WARNING - Embedding rate limited (429), retry 2/5 after 20.0s: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/doc
+2026-05-22 00:25:40,730 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:40,731 - INFO - Retrying request to /embeddings in 0.446474 seconds
+2026-05-22 00:25:41,407 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:41,407 - INFO - Retrying request to /embeddings in 0.914931 seconds
+2026-05-22 00:25:42,550 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:25:42,550 - WARNING - Embedding rate limited (429), retry 3/5 after 40.0s: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/doc
+2026-05-22 00:26:23,372 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:26:23,372 - INFO - Retrying request to /embeddings in 0.477449 seconds
+2026-05-22 00:26:24,096 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:26:24,096 - INFO - Retrying request to /embeddings in 0.868190 seconds
+2026-05-22 00:26:25,188 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:26:25,189 - WARNING - Embedding rate limited (429), retry 4/5 after 80.0s: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/doc
+2026-05-22 00:27:46,800 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:27:46,800 - INFO - Retrying request to /embeddings in 0.495265 seconds
+2026-05-22 00:27:47,494 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:27:47,495 - INFO - Retrying request to /embeddings in 0.783896 seconds
+2026-05-22 00:27:48,587 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:27:48,588 - ERROR - Unexpected error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+Traceback (most recent call last):
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\scripts\index_text.py", line 963, in main
+    result = process_collection(args.data_root, args.collection, embeddings_model, qdrant_client)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\scripts\index_text.py", line 778, in process_collection
+    result = process_file(str(file_path), collection_name, embeddings_model, client)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\scripts\index_text.py", line 722, in process_file
+    stats = embed_and_upsert(chunks, file_metadata, embeddings_model, client, qdrant_name)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\scripts\index_text.py", line 602, in embed_and_upsert
+    batch_embeddings = embed_batch_with_retry(embeddings_model, batch_texts)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\scripts\index_text.py", line 219, in embed_batch_with_retry
+    return embeddings_model.embed_documents(batch_texts)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Lib\site-packages\langchain_openai\embeddings\base.py", line 592, in embed_documents
+    return self._get_len_safe_embeddings(texts, engine=engine)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Lib\site-packages\langchain_openai\embeddings\base.py", line 490, in _get_len_safe_embeddings
+    response = self.client.create(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Lib\site-packages\openai\resources\embeddings.py", line 132, in create
+    return self._post(
+           ^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Lib\site-packages\openai\_base_client.py", line 1259, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Lib\site-packages\openai\_base_client.py", line 1047, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+================================================================================
+
+================================================================================
+RUN: 2a. Retrieval (query_chunks.py)
+Time: 2026-05-22T00:27:54.504757
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/query_chunks.py --q electrolyzer efficiency --collection hydrogen_books --topk 5
+Return code: 1
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:27:52,145 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:27:52,146 - INFO - Retrying request to /embeddings in 0.479774 seconds
+2026-05-22 00:27:52,807 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+2026-05-22 00:27:52,807 - INFO - Retrying request to /embeddings in 0.844920 seconds
+2026-05-22 00:27:53,835 - INFO - HTTP Request: POST https://api.openai.com/v1/embeddings "HTTP/1.1 429 Too Many Requests"
+Error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+================================================================================
+
+================================================================================
+RUN: 2b. Retrieval (answer_local.py) [SKIPPED]
+Time: 2026-05-22T00:27:54.505769
+--------------------------------------------------------------------------------
+Command: 
+Return code: 0
+--------------------------------------------------------------------------------
+STDERR:
+--skip-ollama
+================================================================================
+
+================================================================================
+RUN: 3. Inventory (report_inventory.py)
+Time: 2026-05-22T00:27:54.637113
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/report_inventory.py --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:27:54,624 - INFO - Generating inventory report...
+2026-05-22 00:27:54,624 - INFO - Found 11 ingestion log files
+2026-05-22 00:27:54,626 - INFO - Report saved: state\reports\inventory.json
+2026-05-22 00:27:54,627 - INFO - Historical report saved: state\reports\inventory_20260522_002754.json
+
+================================================================================
+INVENTORY REPORT SUMMARY
+================================================================================
+
+Generated: 2026-05-21T19:27:54.625768
+State Directory: state
+Logs Processed: 11
+
+OVERALL STATISTICS:
+  Total Collections: 2
+  Total Files: 11
+  Total Chunks: 14
+  ✅ Success: 7
+  ❌ Failed: 4
+  ⏭️  Skipped: 0
+
+COLLECTIONS (2):
+
+  📁 hydrogen
+     Total Files: 1
+     Total Chunks: 0
+     Success: 0
+     Failed: 1
+     Skipped: 0
+     Last Ingestion: 2026-05-21T18:57:50.174317
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+  📁 hydrogen_books
+     Total Files: 10
+     Total Chunks: 14
+     Success: 7
+     Failed: 3
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:22:29.927508
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+
+================================================================================
+2026-05-22 00:27:54,628 - INFO - 
+✅ Inventory report generated successfully!
+2026-05-22 00:27:54,628 - INFO -    Output: state\reports\inventory.json
+================================================================================
+
+================================================================================
+RUN: 4. Preview (preview_extract.py)
+Time: 2026-05-22T00:27:55.540763
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/preview_extract.py --file data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf --pages 1
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:27:55,188 - INFO - Extracting text from PDF: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+
+================================================================================
+PDF TEXT EXTRACTION PREVIEW
+================================================================================
+Total Pages: 14
+Showing: Pages 1
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+PAGE 1
+────────────────────────────────────────────────────────────────────────────────
+Characters: 3,611
+Words: 506
+────────────────────────────────────────────────────────────────────────────────
+
+ 
+This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Hydrogen Bunkering at Ports: A Comprehensive Review by Eliseo Curcio 
+ 
+As the global maritime industry accelerates its efforts toward decarbonization, hydrogen bunkering is 
+emerging as a pivotal component in the transition to cleaner fuels. The International Maritime 
+Organization’s (IMO) mandate to reduce greenhouse gas (GHG) emissions by 50% by 2050 has propelled 
+the exploration of alternative fuels, with hydrogen positioned as a prime candidate due to its potential 
+for zero emissions when used in fuel cells or combustion. Hydrogen’s versatility, as both a fuel and an 
+energy carrier, presents the maritime sector with a valuable pathway to achieving sustainable shipping 
+practices. Hydrogen bunkering involves refueling ships with either compressed hydrogen (CH2) or 
+liquefied hydrogen (LH2). While both forms of hydrogen offer distinct advantages, they also come with 
+unique storage, safety, and handling requirements that pose significant technical challenges for ports 
+worldwide. The complexity of hydrogen as a marine fuel lies in its cryogenic properties, particularly for 
+liquefied hydrogen, and its highl
+================================================================================
+
+================================================================================
+RUN: 5. Check numbers (check_numbers.py)
+Time: 2026-05-22T00:28:00.034859
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/check_numbers.py --collection hydrogen_books --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:27:59,266 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+Wrote 0 issues to state\reports\numeric_issues.json
+================================================================================
+
+================================================================================
+FINAL TEST REPORT
+================================================================================
+Date: 2026-05-22T00:28:00.035848
+Environment: QDRANT_URL=https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io, OLLAMA_BASE_URL=http://localhost:11434, STATE_ROOT=state
+--------------------------------------------------------------------------------
+  FAIL  1. Ingestion (index_text.py) (return code 1)
+  FAIL  2a. Retrieval (query_chunks.py) (return code 1)
+  PASS  2b. Retrieval (answer_local.py) (return code 0)
+  PASS  3. Inventory (report_inventory.py) (return code 0)
+  PASS  4. Preview (preview_extract.py) (return code 0)
+  PASS  5. Check numbers (check_numbers.py) (return code 0)
+--------------------------------------------------------------------------------
+One or more scripts failed. See sections above for details.
+================================================================================
+
+================================================================================
+RUN: 1. Ingestion (index_text.py)
+Time: 2026-05-22T00:30:56.349507
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/index_text.py --data-root data --collection hydrogen_books
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:30:46,915 - INFO - 
+================================================================================
+2026-05-22 00:30:46,916 - INFO - Processing Collection: hydrogen_books
+2026-05-22 00:30:46,916 - INFO - ================================================================================
+2026-05-22 00:30:46,916 - INFO - Found 1 files
+2026-05-22 00:30:47,501 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:30:47,503 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:30:47,503 - INFO - 
+================================================================================
+2026-05-22 00:30:47,503 - INFO - Processing: data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:30:47,503 - INFO - ================================================================================
+2026-05-22 00:30:47,669 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:30:47,673 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:30:47,838 - INFO - Extracted 14 pages from Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:30:48,038 - INFO - Created 59 hierarchical chunks
+2026-05-22 00:30:48,205 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+2026-05-22 00:30:48,208 - INFO - Generating embeddings for 59 chunks (batch_size=20, delay=1.0s)...
+2026-05-22 00:30:49,880 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:30:50,542 - INFO -   Embedded 20/59
+2026-05-22 00:30:51,951 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:30:52,179 - INFO -   Embedded 40/59
+2026-05-22 00:30:53,585 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:30:53,595 - INFO -   Embedded 59/59
+2026-05-22 00:30:53,600 - INFO - Upserting 59 points to collection 'rag_hydrogen_books'...
+2026-05-22 00:30:55,293 - INFO - HTTP Request: PUT https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:30:55,299 - INFO -   Upserted 59/59
+2026-05-22 00:30:55,305 - INFO - [SUCCESS] Successfully processed Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:30:55,305 - INFO -    Chunks: 59
+2026-05-22 00:30:55,305 - INFO - 
+================================================================================
+2026-05-22 00:30:55,305 - INFO - Collection Processing Complete
+2026-05-22 00:30:55,306 - INFO - ================================================================================
+2026-05-22 00:30:55,306 - INFO - Files processed: 1/1
+2026-05-22 00:30:55,306 - INFO - Skipped (no text): 0, Failed: 0
+2026-05-22 00:30:55,306 - INFO - Total chunks: 59
+2026-05-22 00:30:55,311 - INFO - Report saved: state\ingestion_hydrogen_books_20260522_003055.json
+2026-05-22 00:30:55,311 - INFO - 
+[SUCCESS] Ingestion complete!
+================================================================================
+
+================================================================================
+RUN: 2a. Retrieval (query_chunks.py)
+Time: 2026-05-22T00:31:01.508651
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/query_chunks.py --q electrolyzer efficiency --collection hydrogen_books --topk 5
+Return code: 1
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:31:00,123 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:31:00,792 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/search "HTTP/1.1 400 Bad Request"
+Error: Unexpected Response: 400 (Bad Request)
+Raw response content:
+b'{"status":{"error":"Bad request: Index required but not found for \\"is_leaf\\" of one of the following types: [bool]. Help: Create an index for this key or use a different filter."},"time":1.714e-6}'
+================================================================================
+
+================================================================================
+RUN: 2b. Retrieval (answer_local.py) [SKIPPED]
+Time: 2026-05-22T00:31:01.509670
+--------------------------------------------------------------------------------
+Command: 
+Return code: 0
+--------------------------------------------------------------------------------
+STDERR:
+--skip-ollama
+================================================================================
+
+================================================================================
+RUN: 3. Inventory (report_inventory.py)
+Time: 2026-05-22T00:31:01.666895
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/report_inventory.py --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:31:01,651 - INFO - Generating inventory report...
+2026-05-22 00:31:01,652 - INFO - Found 12 ingestion log files
+2026-05-22 00:31:01,653 - INFO - Report saved: state\reports\inventory.json
+2026-05-22 00:31:01,654 - INFO - Historical report saved: state\reports\inventory_20260522_003101.json
+
+================================================================================
+INVENTORY REPORT SUMMARY
+================================================================================
+
+Generated: 2026-05-21T19:31:01.652176
+State Directory: state
+Logs Processed: 12
+
+OVERALL STATISTICS:
+  Total Collections: 2
+  Total Files: 12
+  Total Chunks: 73
+  ✅ Success: 8
+  ❌ Failed: 4
+  ⏭️  Skipped: 0
+
+COLLECTIONS (2):
+
+  📁 hydrogen
+     Total Files: 1
+     Total Chunks: 0
+     Success: 0
+     Failed: 1
+     Skipped: 0
+     Last Ingestion: 2026-05-21T18:57:50.174317
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+  📁 hydrogen_books
+     Total Files: 11
+     Total Chunks: 73
+     Success: 8
+     Failed: 3
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:30:55.308521
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+
+================================================================================
+2026-05-22 00:31:01,654 - INFO - 
+✅ Inventory report generated successfully!
+2026-05-22 00:31:01,654 - INFO -    Output: state\reports\inventory.json
+================================================================================
+
+================================================================================
+RUN: 4. Preview (preview_extract.py)
+Time: 2026-05-22T00:31:02.648705
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/preview_extract.py --file data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf --pages 1
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:31:02,267 - INFO - Extracting text from PDF: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+
+================================================================================
+PDF TEXT EXTRACTION PREVIEW
+================================================================================
+Total Pages: 14
+Showing: Pages 1
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+PAGE 1
+────────────────────────────────────────────────────────────────────────────────
+Characters: 3,611
+Words: 506
+────────────────────────────────────────────────────────────────────────────────
+
+ 
+This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Hydrogen Bunkering at Ports: A Comprehensive Review by Eliseo Curcio 
+ 
+As the global maritime industry accelerates its efforts toward decarbonization, hydrogen bunkering is 
+emerging as a pivotal component in the transition to cleaner fuels. The International Maritime 
+Organization’s (IMO) mandate to reduce greenhouse gas (GHG) emissions by 50% by 2050 has propelled 
+the exploration of alternative fuels, with hydrogen positioned as a prime candidate due to its potential 
+for zero emissions when used in fuel cells or combustion. Hydrogen’s versatility, as both a fuel and an 
+energy carrier, presents the maritime sector with a valuable pathway to achieving sustainable shipping 
+practices. Hydrogen bunkering involves refueling ships with either compressed hydrogen (CH2) or 
+liquefied hydrogen (LH2). While both forms of hydrogen offer distinct advantages, they also come with 
+unique storage, safety, and handling requirements that pose significant technical challenges for ports 
+worldwide. The complexity of hydrogen as a marine fuel lies in its cryogenic properties, particularly for 
+liquefied hydrogen, and its highl
+================================================================================
+
+================================================================================
+RUN: 5. Check numbers (check_numbers.py)
+Time: 2026-05-22T00:31:06.442164
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/check_numbers.py --collection hydrogen_books --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:31:05,478 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+Wrote 10 issues to state\reports\numeric_issues.json
+================================================================================
+
+================================================================================
+FINAL TEST REPORT
+================================================================================
+Date: 2026-05-22T00:31:06.443162
+Environment: QDRANT_URL=https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io, OLLAMA_BASE_URL=http://localhost:11434, STATE_ROOT=state
+--------------------------------------------------------------------------------
+  PASS  1. Ingestion (index_text.py) (return code 0)
+  FAIL  2a. Retrieval (query_chunks.py) (return code 1)
+  PASS  2b. Retrieval (answer_local.py) (return code 0)
+  PASS  3. Inventory (report_inventory.py) (return code 0)
+  PASS  4. Preview (preview_extract.py) (return code 0)
+  PASS  5. Check numbers (check_numbers.py) (return code 0)
+--------------------------------------------------------------------------------
+One or more scripts failed. See sections above for details.
+================================================================================
+
+================================================================================
+RUN: 1. Ingestion (index_text.py)
+Time: 2026-05-22T00:32:32.069785
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/index_text.py --data-root data --collection hydrogen_books
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:32:23,034 - INFO - 
+================================================================================
+2026-05-22 00:32:23,034 - INFO - Processing Collection: hydrogen_books
+2026-05-22 00:32:23,034 - INFO - ================================================================================
+2026-05-22 00:32:23,034 - INFO - Found 1 files
+2026-05-22 00:32:23,551 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:32:23,553 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:32:23,553 - INFO - 
+================================================================================
+2026-05-22 00:32:23,553 - INFO - Processing: data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:32:23,553 - INFO - ================================================================================
+2026-05-22 00:32:23,716 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:32:23,718 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:32:23,838 - INFO - Extracted 14 pages from Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:32:24,027 - INFO - Created 59 hierarchical chunks
+2026-05-22 00:32:24,194 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+2026-05-22 00:32:24,197 - WARNING - Document already exists, deleting old version: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:32:24,364 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:32:24,366 - INFO - Generating embeddings for 59 chunks (batch_size=20, delay=1.0s)...
+2026-05-22 00:32:26,096 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:32:26,753 - INFO -   Embedded 20/59
+2026-05-22 00:32:28,293 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:32:28,516 - INFO -   Embedded 40/59
+2026-05-22 00:32:29,919 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:32:29,937 - INFO -   Embedded 59/59
+2026-05-22 00:32:29,939 - INFO - Upserting 59 points to collection 'rag_hydrogen_books'...
+2026-05-22 00:32:31,576 - INFO - HTTP Request: PUT https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:32:31,578 - INFO -   Upserted 59/59
+2026-05-22 00:32:31,579 - INFO - [SUCCESS] Successfully processed Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:32:31,580 - INFO -    Chunks: 59
+2026-05-22 00:32:31,580 - INFO - 
+================================================================================
+2026-05-22 00:32:31,580 - INFO - Collection Processing Complete
+2026-05-22 00:32:31,580 - INFO - ================================================================================
+2026-05-22 00:32:31,580 - INFO - Files processed: 1/1
+2026-05-22 00:32:31,580 - INFO - Skipped (no text): 0, Failed: 0
+2026-05-22 00:32:31,580 - INFO - Total chunks: 59
+2026-05-22 00:32:31,583 - INFO - Report saved: state\ingestion_hydrogen_books_20260522_003231.json
+2026-05-22 00:32:31,583 - INFO - 
+[SUCCESS] Ingestion complete!
+================================================================================
+
+================================================================================
+RUN: 2a. Retrieval (query_chunks.py)
+Time: 2026-05-22T00:32:36.347798
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/query_chunks.py --q electrolyzer efficiency --collection hydrogen_books --topk 5
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:32:35,241 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:32:35,908 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/search "HTTP/1.1 200 OK"
+Query: electrolyzer efficiency
+Collection: rag_hydrogen_books
+Top-5 hits:
+
+--- Hit 1 ---
+score:        0.7694
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:3:22
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   3
+page_end:     3
+page_start-page_end: 3-3
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Automated emergency shutdow…
+
+--- Hit 2 ---
+score:        0.7609
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:13:54
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   13
+page_end:     13
+page_start-page_end: 13-13
+text_preview: As green hydrogen production scales up, the cost is expected to decrease, making it more 
+competitive with traditional fuels and increasing its adoption in the maritime sector. 
+• 
+Technological Innov…
+
+--- Hit 3 ---
+score:        0.7554
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:49
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+to plan long-term investmen…
+
+--- Hit 4 ---
+score:        0.7546
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:51
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: o 
+Gray hydrogen, produced from natural gas without CCS, generates significant carbon 
+emissions and is not aligned with long-term decarbonization goals. 
+The widespread adoption of hydrogen bunkering…
+
+--- Hit 5 ---
+score:        0.7518
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:5:27
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   5
+page_end:     5
+page_start-page_end: 5-5
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+process, increasing the ris…
+
+================================================================================
+
+================================================================================
+RUN: 2b. Retrieval (answer_local.py) [SKIPPED]
+Time: 2026-05-22T00:32:36.347798
+--------------------------------------------------------------------------------
+Command: 
+Return code: 0
+--------------------------------------------------------------------------------
+STDERR:
+--skip-ollama
+================================================================================
+
+================================================================================
+RUN: 3. Inventory (report_inventory.py)
+Time: 2026-05-22T00:32:36.419463
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/report_inventory.py --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:32:36,410 - INFO - Generating inventory report...
+2026-05-22 00:32:36,410 - INFO - Found 13 ingestion log files
+2026-05-22 00:32:36,411 - INFO - Report saved: state\reports\inventory.json
+2026-05-22 00:32:36,412 - INFO - Historical report saved: state\reports\inventory_20260522_003236.json
+
+================================================================================
+INVENTORY REPORT SUMMARY
+================================================================================
+
+Generated: 2026-05-21T19:32:36.411448
+State Directory: state
+Logs Processed: 13
+
+OVERALL STATISTICS:
+  Total Collections: 2
+  Total Files: 13
+  Total Chunks: 132
+  ✅ Success: 9
+  ❌ Failed: 4
+  ⏭️  Skipped: 0
+
+COLLECTIONS (2):
+
+  📁 hydrogen
+     Total Files: 1
+     Total Chunks: 0
+     Success: 0
+     Failed: 1
+     Skipped: 0
+     Last Ingestion: 2026-05-21T18:57:50.174317
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+  📁 hydrogen_books
+     Total Files: 12
+     Total Chunks: 132
+     Success: 9
+     Failed: 3
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:32:31.580511
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+
+================================================================================
+2026-05-22 00:32:36,412 - INFO - 
+✅ Inventory report generated successfully!
+2026-05-22 00:32:36,412 - INFO -    Output: state\reports\inventory.json
+================================================================================
+
+================================================================================
+RUN: 4. Preview (preview_extract.py)
+Time: 2026-05-22T00:32:37.173223
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/preview_extract.py --file data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf --pages 1
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:32:36,925 - INFO - Extracting text from PDF: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+
+================================================================================
+PDF TEXT EXTRACTION PREVIEW
+================================================================================
+Total Pages: 14
+Showing: Pages 1
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+PAGE 1
+────────────────────────────────────────────────────────────────────────────────
+Characters: 3,611
+Words: 506
+────────────────────────────────────────────────────────────────────────────────
+
+ 
+This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Hydrogen Bunkering at Ports: A Comprehensive Review by Eliseo Curcio 
+ 
+As the global maritime industry accelerates its efforts toward decarbonization, hydrogen bunkering is 
+emerging as a pivotal component in the transition to cleaner fuels. The International Maritime 
+Organization’s (IMO) mandate to reduce greenhouse gas (GHG) emissions by 50% by 2050 has propelled 
+the exploration of alternative fuels, with hydrogen positioned as a prime candidate due to its potential 
+for zero emissions when used in fuel cells or combustion. Hydrogen’s versatility, as both a fuel and an 
+energy carrier, presents the maritime sector with a valuable pathway to achieving sustainable shipping 
+practices. Hydrogen bunkering involves refueling ships with either compressed hydrogen (CH2) or 
+liquefied hydrogen (LH2). While both forms of hydrogen offer distinct advantages, they also come with 
+unique storage, safety, and handling requirements that pose significant technical challenges for ports 
+worldwide. The complexity of hydrogen as a marine fuel lies in its cryogenic properties, particularly for 
+liquefied hydrogen, and its highl
+================================================================================
+
+================================================================================
+RUN: 5. Check numbers (check_numbers.py)
+Time: 2026-05-22T00:32:40.316485
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/check_numbers.py --collection hydrogen_books --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:32:39,507 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+Wrote 10 issues to state\reports\numeric_issues.json
+================================================================================
+
+================================================================================
+FINAL TEST REPORT
+================================================================================
+Date: 2026-05-22T00:32:40.317505
+Environment: QDRANT_URL=https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io, OLLAMA_BASE_URL=http://localhost:11434, STATE_ROOT=state
+--------------------------------------------------------------------------------
+  PASS  1. Ingestion (index_text.py) (return code 0)
+  PASS  2a. Retrieval (query_chunks.py) (return code 0)
+  PASS  2b. Retrieval (answer_local.py) (return code 0)
+  PASS  3. Inventory (report_inventory.py) (return code 0)
+  PASS  4. Preview (preview_extract.py) (return code 0)
+  PASS  5. Check numbers (check_numbers.py) (return code 0)
+--------------------------------------------------------------------------------
+All scripts completed successfully.
+================================================================================
+
+================================================================================
+RUN: 1. Ingestion (index_text.py)
+Time: 2026-05-22T00:43:52.122687
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/index_text.py --data-root data --collection hydrogen_books
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:43:42,703 - INFO - 
+================================================================================
+2026-05-22 00:43:42,703 - INFO - Processing Collection: hydrogen_books
+2026-05-22 00:43:42,703 - INFO - ================================================================================
+2026-05-22 00:43:42,703 - INFO - Found 1 files
+2026-05-22 00:43:43,302 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:43:43,302 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:43:43,302 - INFO - 
+================================================================================
+2026-05-22 00:43:43,302 - INFO - Processing: data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:43:43,302 - INFO - ================================================================================
+2026-05-22 00:43:43,467 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:43:43,468 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:43:43,613 - INFO - Extracted 14 pages from Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:43:43,823 - INFO - Created 59 hierarchical chunks
+2026-05-22 00:43:43,987 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+2026-05-22 00:43:43,988 - WARNING - Document already exists, deleting old version: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:43:44,154 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:43:44,155 - INFO - Generating embeddings for 59 chunks (batch_size=20, delay=1.0s)...
+2026-05-22 00:43:45,761 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:43:46,411 - INFO -   Embedded 20/59
+2026-05-22 00:43:47,795 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:43:48,018 - INFO -   Embedded 40/59
+2026-05-22 00:43:49,443 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:43:49,459 - INFO -   Embedded 59/59
+2026-05-22 00:43:49,461 - INFO - Upserting 59 points to collection 'rag_hydrogen_books'...
+2026-05-22 00:43:51,363 - INFO - HTTP Request: PUT https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:43:51,364 - INFO -   Upserted 59/59
+2026-05-22 00:43:51,365 - INFO - [SUCCESS] Successfully processed Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:43:51,365 - INFO -    Chunks: 59
+2026-05-22 00:43:51,365 - INFO - 
+================================================================================
+2026-05-22 00:43:51,365 - INFO - Collection Processing Complete
+2026-05-22 00:43:51,365 - INFO - ================================================================================
+2026-05-22 00:43:51,365 - INFO - Files processed: 1/1
+2026-05-22 00:43:51,365 - INFO - Skipped (no text): 0, Failed: 0
+2026-05-22 00:43:51,365 - INFO - Total chunks: 59
+2026-05-22 00:43:51,366 - INFO - Report saved: state\ingestion_hydrogen_books_20260522_004351.json
+2026-05-22 00:43:51,367 - INFO - 
+[SUCCESS] Ingestion complete!
+================================================================================
+
+================================================================================
+RUN: 2a. Retrieval (query_chunks.py)
+Time: 2026-05-22T00:43:57.252844
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/query_chunks.py --q electrolyzer efficiency --collection hydrogen_books --topk 5
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:43:55,894 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:43:56,584 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/search "HTTP/1.1 200 OK"
+Query: electrolyzer efficiency
+Collection: rag_hydrogen_books
+Top-5 hits:
+
+--- Hit 1 ---
+score:        0.7694
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:3:22
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   3
+page_end:     3
+page_start-page_end: 3-3
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Automated emergency shutdow…
+
+--- Hit 2 ---
+score:        0.7609
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:13:54
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   13
+page_end:     13
+page_start-page_end: 13-13
+text_preview: As green hydrogen production scales up, the cost is expected to decrease, making it more 
+competitive with traditional fuels and increasing its adoption in the maritime sector. 
+• 
+Technological Innov…
+
+--- Hit 3 ---
+score:        0.7554
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:49
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+to plan long-term investmen…
+
+--- Hit 4 ---
+score:        0.7546
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:51
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: o 
+Gray hydrogen, produced from natural gas without CCS, generates significant carbon 
+emissions and is not aligned with long-term decarbonization goals. 
+The widespread adoption of hydrogen bunkering…
+
+--- Hit 5 ---
+score:        0.7518
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:5:27
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   5
+page_end:     5
+page_start-page_end: 5-5
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+process, increasing the ris…
+
+================================================================================
+
+================================================================================
+RUN: 2b. Retrieval (answer_local.py) [SKIPPED]
+Time: 2026-05-22T00:43:57.254075
+--------------------------------------------------------------------------------
+Command: 
+Return code: 0
+--------------------------------------------------------------------------------
+STDERR:
+--skip-ollama
+================================================================================
+
+================================================================================
+RUN: 3. Inventory (report_inventory.py)
+Time: 2026-05-22T00:43:57.411975
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/report_inventory.py --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:43:57,401 - INFO - Generating inventory report...
+2026-05-22 00:43:57,402 - INFO - Found 17 ingestion log files
+2026-05-22 00:43:57,404 - INFO - Report saved: state\reports\inventory.json
+2026-05-22 00:43:57,405 - INFO - Historical report saved: state\reports\inventory_20260522_004357.json
+
+================================================================================
+INVENTORY REPORT SUMMARY
+================================================================================
+
+Generated: 2026-05-21T19:43:57.403385
+State Directory: state
+Logs Processed: 17
+
+OVERALL STATISTICS:
+  Total Collections: 3
+  Total Files: 17
+  Total Chunks: 388
+  ✅ Success: 12
+  ❌ Failed: 5
+  ⏭️  Skipped: 0
+
+COLLECTIONS (3):
+
+  📁 hydrogen
+     Total Files: 1
+     Total Chunks: 0
+     Success: 0
+     Failed: 1
+     Skipped: 0
+     Last Ingestion: 2026-05-21T18:57:50.174317
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+  📁 hydrogen_books
+     Total Files: 15
+     Total Chunks: 250
+     Success: 11
+     Failed: 4
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:43:51.365557
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Energy Storage (Advances in Renewable Energy Series) (Umakanta Sahoo) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to text-embedding-ada-002 for text-embedding-ada-002 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+
+  📁 renewable
+     Total Files: 1
+     Total Chunks: 138
+     Success: 1
+     Failed: 0
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:41:02.610540
+
+================================================================================
+2026-05-22 00:43:57,405 - INFO - 
+✅ Inventory report generated successfully!
+2026-05-22 00:43:57,405 - INFO -    Output: state\reports\inventory.json
+================================================================================
+
+================================================================================
+RUN: 4. Preview (preview_extract.py)
+Time: 2026-05-22T00:43:58.291409
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/preview_extract.py --file data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf --pages 1
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:43:58,002 - INFO - Extracting text from PDF: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+
+================================================================================
+PDF TEXT EXTRACTION PREVIEW
+================================================================================
+Total Pages: 14
+Showing: Pages 1
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+PAGE 1
+────────────────────────────────────────────────────────────────────────────────
+Characters: 3,611
+Words: 506
+────────────────────────────────────────────────────────────────────────────────
+
+ 
+This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Hydrogen Bunkering at Ports: A Comprehensive Review by Eliseo Curcio 
+ 
+As the global maritime industry accelerates its efforts toward decarbonization, hydrogen bunkering is 
+emerging as a pivotal component in the transition to cleaner fuels. The International Maritime 
+Organization’s (IMO) mandate to reduce greenhouse gas (GHG) emissions by 50% by 2050 has propelled 
+the exploration of alternative fuels, with hydrogen positioned as a prime candidate due to its potential 
+for zero emissions when used in fuel cells or combustion. Hydrogen’s versatility, as both a fuel and an 
+energy carrier, presents the maritime sector with a valuable pathway to achieving sustainable shipping 
+practices. Hydrogen bunkering involves refueling ships with either compressed hydrogen (CH2) or 
+liquefied hydrogen (LH2). While both forms of hydrogen offer distinct advantages, they also come with 
+unique storage, safety, and handling requirements that pose significant technical challenges for ports 
+worldwide. The complexity of hydrogen as a marine fuel lies in its cryogenic properties, particularly for 
+liquefied hydrogen, and its highl
+================================================================================
+
+================================================================================
+RUN: 5. Check numbers (check_numbers.py)
+Time: 2026-05-22T00:44:01.810490
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/check_numbers.py --collection hydrogen_books --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:44:01,076 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+Wrote 10 issues to state\reports\numeric_issues.json
+================================================================================
+
+================================================================================
+FINAL TEST REPORT
+================================================================================
+Date: 2026-05-22T00:44:01.811498
+Environment: QDRANT_URL=https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io, OLLAMA_BASE_URL=http://localhost:11434, STATE_ROOT=state
+--------------------------------------------------------------------------------
+  PASS  1. Ingestion (index_text.py) (return code 0)
+  PASS  2a. Retrieval (query_chunks.py) (return code 0)
+  PASS  2b. Retrieval (answer_local.py) (return code 0)
+  PASS  3. Inventory (report_inventory.py) (return code 0)
+  PASS  4. Preview (preview_extract.py) (return code 0)
+  PASS  5. Check numbers (check_numbers.py) (return code 0)
+--------------------------------------------------------------------------------
+All scripts completed successfully.
+================================================================================
+
+================================================================================
+RUN: 1. Ingestion (index_text.py)
+Time: 2026-05-22T00:47:12.043616
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/index_text.py --data-root data --collection hydrogen_books
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:47:02,677 - INFO - 
+================================================================================
+2026-05-22 00:47:02,677 - INFO - Processing Collection: hydrogen_books
+2026-05-22 00:47:02,677 - INFO - ================================================================================
+2026-05-22 00:47:02,677 - INFO - Found 1 files
+2026-05-22 00:47:03,241 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:47:03,248 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:47:03,249 - INFO - 
+================================================================================
+2026-05-22 00:47:03,249 - INFO - Processing: data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:47:03,249 - INFO - ================================================================================
+2026-05-22 00:47:03,415 - INFO - HTTP Request: GET https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections "HTTP/1.1 200 OK"
+2026-05-22 00:47:03,415 - INFO - Collection 'rag_hydrogen_books' already exists
+2026-05-22 00:47:03,560 - INFO - Extracted 14 pages from Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:47:03,760 - INFO - Created 59 hierarchical chunks
+2026-05-22 00:47:03,928 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+2026-05-22 00:47:03,931 - WARNING - Document already exists, deleting old version: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:47:04,097 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/delete?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:47:04,099 - INFO - Generating embeddings for 59 chunks (batch_size=20, delay=1.0s)...
+2026-05-22 00:47:05,696 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:47:06,361 - INFO -   Embedded 20/59
+2026-05-22 00:47:07,767 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:47:07,987 - INFO -   Embedded 40/59
+2026-05-22 00:47:09,389 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:47:09,433 - INFO -   Embedded 59/59
+2026-05-22 00:47:09,438 - INFO - Upserting 59 points to collection 'rag_hydrogen_books'...
+2026-05-22 00:47:11,296 - INFO - HTTP Request: PUT https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points?wait=true "HTTP/1.1 200 OK"
+2026-05-22 00:47:11,297 - INFO -   Upserted 59/59
+2026-05-22 00:47:11,299 - INFO - [SUCCESS] Successfully processed Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+2026-05-22 00:47:11,299 - INFO -    Chunks: 59
+2026-05-22 00:47:11,299 - INFO - 
+================================================================================
+2026-05-22 00:47:11,299 - INFO - Collection Processing Complete
+2026-05-22 00:47:11,299 - INFO - ================================================================================
+2026-05-22 00:47:11,299 - INFO - Files processed: 1/1
+2026-05-22 00:47:11,300 - INFO - Skipped (no text): 0, Failed: 0
+2026-05-22 00:47:11,300 - INFO - Total chunks: 59
+2026-05-22 00:47:11,303 - INFO - Report saved: state\ingestion_hydrogen_books_20260522_004711.json
+2026-05-22 00:47:11,303 - INFO - 
+[SUCCESS] Ingestion complete!
+================================================================================
+
+================================================================================
+RUN: 2a. Retrieval (query_chunks.py)
+Time: 2026-05-22T00:47:16.904837
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/query_chunks.py --q electrolyzer efficiency --collection hydrogen_books --topk 5
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:47:15,676 - INFO - HTTP Request: POST https://rg-openai-bazla.openai.azure.com/openai/deployments/text-embedding-ada-002/embeddings?api-version=2024-12-01-preview "HTTP/1.1 200 OK"
+2026-05-22 00:47:16,323 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/search "HTTP/1.1 200 OK"
+Query: electrolyzer efficiency
+Collection: rag_hydrogen_books
+Top-5 hits:
+
+--- Hit 1 ---
+score:        0.7694
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:3:22
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   3
+page_end:     3
+page_start-page_end: 3-3
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Automated emergency shutdow…
+
+--- Hit 2 ---
+score:        0.7609
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:13:54
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   13
+page_end:     13
+page_start-page_end: 13-13
+text_preview: As green hydrogen production scales up, the cost is expected to decrease, making it more 
+competitive with traditional fuels and increasing its adoption in the maritime sector. 
+• 
+Technological Innov…
+
+--- Hit 3 ---
+score:        0.7554
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:49
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+to plan long-term investmen…
+
+--- Hit 4 ---
+score:        0.7546
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:12:51
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   12
+page_end:     12
+page_start-page_end: 12-12
+text_preview: o 
+Gray hydrogen, produced from natural gas without CCS, generates significant carbon 
+emissions and is not aligned with long-term decarbonization goals. 
+The widespread adoption of hydrogen bunkering…
+
+--- Hit 5 ---
+score:        0.7518
+chunk_id:     83fc67a0aa8fbfd21e1eb06b181d7e9e:5:27
+source_path:  hydrogen_books/Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+page_start:   5
+page_end:     5
+page_start-page_end: 5-5
+text_preview: This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+process, increasing the ris…
+
+================================================================================
+
+================================================================================
+RUN: 2b. Retrieval (answer_local.py) [SKIPPED]
+Time: 2026-05-22T00:47:16.906567
+--------------------------------------------------------------------------------
+Command: 
+Return code: 0
+--------------------------------------------------------------------------------
+STDERR:
+--skip-ollama
+================================================================================
+
+================================================================================
+RUN: 3. Inventory (report_inventory.py)
+Time: 2026-05-22T00:47:17.031018
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/report_inventory.py --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:47:17,019 - INFO - Generating inventory report...
+2026-05-22 00:47:17,019 - INFO - Found 18 ingestion log files
+2026-05-22 00:47:17,021 - INFO - Report saved: state\reports\inventory.json
+2026-05-22 00:47:17,021 - INFO - Historical report saved: state\reports\inventory_20260522_004717.json
+
+================================================================================
+INVENTORY REPORT SUMMARY
+================================================================================
+
+Generated: 2026-05-21T19:47:17.020297
+State Directory: state
+Logs Processed: 18
+
+OVERALL STATISTICS:
+  Total Collections: 3
+  Total Files: 18
+  Total Chunks: 447
+  ✅ Success: 13
+  ❌ Failed: 5
+  ⏭️  Skipped: 0
+
+COLLECTIONS (3):
+
+  📁 hydrogen
+     Total Files: 1
+     Total Chunks: 0
+     Success: 0
+     Failed: 1
+     Skipped: 0
+     Last Ingestion: 2026-05-21T18:57:50.174317
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+
+  📁 hydrogen_books
+     Total Files: 16
+     Total Chunks: 309
+     Success: 12
+     Failed: 4
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:47:11.300807
+     Failed Files:
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.', 'type': 'insufficient_quota', 'param': None, 'code': 'insufficient_quota'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Advances in Renewable Hydrogen and Other Sustainable Energy Carriers (Abdallah Khellaf) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to my-gpt-4.1 for gpt-4.1 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+       - Energy Storage (Advances in Renewable Energy Series) (Umakanta Sahoo) (Z-Library).pdf: Embedding error: Error code: 429 - {'error': {'code': 'RateLimitReached', 'message': 'Your requests to text-embedding-ada-002 for text-embedding-ada-002 in East US 2 have exceeded the call rate limit for your current OpenAI S0 pricing tier. This request was for Embeddings_Create under Azure OpenAI API version 2024-12-01-preview. Please retry after 60 seconds. To increase your default rate limit, visit: https://aka.ms/oai/quotaincrease.'}}
+
+  📁 renewable
+     Total Files: 1
+     Total Chunks: 138
+     Success: 1
+     Failed: 0
+     Skipped: 0
+     Last Ingestion: 2026-05-21T19:41:02.610540
+
+================================================================================
+2026-05-22 00:47:17,021 - INFO - 
+✅ Inventory report generated successfully!
+2026-05-22 00:47:17,021 - INFO -    Output: state\reports\inventory.json
+================================================================================
+
+================================================================================
+RUN: 4. Preview (preview_extract.py)
+Time: 2026-05-22T00:47:17.926683
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/preview_extract.py --file data\hydrogen_books\Hydrogen Bunkering at Ports by Eliseo Curcio.pdf --pages 1
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:47:17,634 - INFO - Extracting text from PDF: Hydrogen Bunkering at Ports by Eliseo Curcio.pdf
+
+================================================================================
+PDF TEXT EXTRACTION PREVIEW
+================================================================================
+Total Pages: 14
+Showing: Pages 1
+================================================================================
+
+
+────────────────────────────────────────────────────────────────────────────────
+PAGE 1
+────────────────────────────────────────────────────────────────────────────────
+Characters: 3,611
+Words: 506
+────────────────────────────────────────────────────────────────────────────────
+
+ 
+This report was created by Eliseo Curcio. Director of Clean Technologies at Blend Tiger. Please reach out for any questions: lee@theblendtiger.com 
+lee.e.curcio@gmail.com  
+Hydrogen Bunkering at Ports: A Comprehensive Review by Eliseo Curcio 
+ 
+As the global maritime industry accelerates its efforts toward decarbonization, hydrogen bunkering is 
+emerging as a pivotal component in the transition to cleaner fuels. The International Maritime 
+Organization’s (IMO) mandate to reduce greenhouse gas (GHG) emissions by 50% by 2050 has propelled 
+the exploration of alternative fuels, with hydrogen positioned as a prime candidate due to its potential 
+for zero emissions when used in fuel cells or combustion. Hydrogen’s versatility, as both a fuel and an 
+energy carrier, presents the maritime sector with a valuable pathway to achieving sustainable shipping 
+practices. Hydrogen bunkering involves refueling ships with either compressed hydrogen (CH2) or 
+liquefied hydrogen (LH2). While both forms of hydrogen offer distinct advantages, they also come with 
+unique storage, safety, and handling requirements that pose significant technical challenges for ports 
+worldwide. The complexity of hydrogen as a marine fuel lies in its cryogenic properties, particularly for 
+liquefied hydrogen, and its highl
+================================================================================
+
+================================================================================
+RUN: 5. Check numbers (check_numbers.py)
+Time: 2026-05-22T00:47:21.415147
+--------------------------------------------------------------------------------
+Command: C:\Users\HP\Documents\Python Scripts\Python\ai_rag\Eva_Rsearch_AI\.venv\Scripts\python.exe scripts/check_numbers.py --collection hydrogen_books --state state
+Return code: 0
+--------------------------------------------------------------------------------
+STDOUT:
+2026-05-22 00:47:20,645 - INFO - HTTP Request: POST https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io:6333/collections/rag_hydrogen_books/points/scroll "HTTP/1.1 200 OK"
+Wrote 10 issues to state\reports\numeric_issues.json
+================================================================================
+
+================================================================================
+FINAL TEST REPORT
+================================================================================
+Date: 2026-05-22T00:47:21.416144
+Environment: QDRANT_URL=https://d3697474-3966-4f0e-853f-eaccef5de2ef.eu-central-1-0.aws.cloud.qdrant.io, OLLAMA_BASE_URL=http://localhost:11434, STATE_ROOT=state
+--------------------------------------------------------------------------------
+  PASS  1. Ingestion (index_text.py) (return code 0)
+  PASS  2a. Retrieval (query_chunks.py) (return code 0)
+  PASS  2b. Retrieval (answer_local.py) (return code 0)
+  PASS  3. Inventory (report_inventory.py) (return code 0)
+  PASS  4. Preview (preview_extract.py) (return code 0)
+  PASS  5. Check numbers (check_numbers.py) (return code 0)
+--------------------------------------------------------------------------------
+All scripts completed successfully.
+================================================================================

@@ -89,7 +89,14 @@ class SessionManager:
         sessions.sort(key=lambda x: x["last_active"], reverse=True)
         return sessions
     
-    def add_message(self, role: str, content: str, session_id: Optional[str] = None):
+    def add_message(
+        self,
+        role: str,
+        content: str,
+        session_id: Optional[str] = None,
+        msg_id: Optional[str] = None,
+        metadata: Optional[Dict] = None
+    ):
         """Add a message to session history"""
         sid = session_id or self.current_session
         if not sid or sid not in self.sessions:
@@ -100,11 +107,42 @@ class SessionManager:
             "content": content,
             "timestamp": datetime.now().isoformat()
         }
-        
+        if msg_id:
+            message["id"] = msg_id
+        else:
+            message["id"] = f"{sid}-{role}-{len(self.sessions[sid]['history'])}"
+            
+        if metadata:
+            message["metadata"] = metadata
+            
         self.sessions[sid]["history"].append(message)
         self.sessions[sid]["message_count"] = len(self.sessions[sid]["history"])
         self.sessions[sid]["last_active"] = datetime.now().isoformat()
         self._save_session(sid)
+
+    def update_message(self, session_id: str, msg_id: str, updates: Dict) -> bool:
+        """Update fields of an existing message in session history"""
+        if session_id not in self.sessions:
+            return False
+        
+        history = self.sessions[session_id].get("history", [])
+        updated = False
+        for msg in history:
+            if msg.get("id") == msg_id:
+                for k, v in updates.items():
+                    if k == "metadata":
+                        if "metadata" not in msg or not isinstance(msg["metadata"], dict):
+                            msg["metadata"] = {}
+                        msg["metadata"].update(v)
+                    else:
+                        msg[k] = v
+                updated = True
+                break
+        
+        if updated:
+            self.sessions[session_id]["last_active"] = datetime.now().isoformat()
+            self._save_session(session_id)
+        return updated
     
     def get_history(self, session_id: Optional[str] = None, last_n: Optional[int] = None) -> List[Dict]:
         """Get conversation history for a session"""
@@ -124,7 +162,7 @@ class SessionManager:
             self.sessions[sid]["history"] = []
             self.sessions[sid]["message_count"] = 0
             self._save_session(sid)
-            print(f"🗑️  History cleared for session: {sid}")
+            print(f"[Session] History cleared for session: {sid}")
     
     def delete_session(self, session_id: str) -> bool:
         """Delete a session permanently"""
@@ -141,7 +179,7 @@ class SessionManager:
             if self.current_session == session_id:
                 self.current_session = None
             
-            print(f"🗑️  Session deleted: {session_id}")
+            print(f"[Session] Session deleted: {session_id}")
             return True
         return False
     
@@ -245,7 +283,7 @@ class SessionManager:
                 f.write(f"[{timestamp}] {msg['role'].upper()}:\n")
                 f.write(f"{msg['content']}\n\n")
         
-        print(f"✅ Session exported to: {export_path}")
+        print(f"[Session] Session exported to: {export_path}")
         return export_path
 
 
@@ -291,7 +329,7 @@ class SessionSelector:
                     if 0 <= idx < len(sessions):
                         session_id = sessions[idx]['session_id']
                         self.session_manager.load_session(session_id)
-                        print(f"\n✅ Loaded session: {sessions[idx]['user_name']}")
+                        print(f"\n[Session] Loaded session: {sessions[idx]['user_name']}")
                         return session_id
                     else:
                         print("Invalid selection. Try again.")
@@ -312,6 +350,6 @@ class SessionSelector:
             user_name = None
         
         session_id = self.session_manager.create_session(user_name)
-        print(f"\n✅ New session created: {session_id}")
+        print(f"\n[Session] New session created: {session_id}")
         
         return session_id

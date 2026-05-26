@@ -25,6 +25,10 @@ from llama_index.core.node_parser import HierarchicalNodeParser
 from langchain_openai import AzureOpenAIEmbeddings
 from qdrant_client import QdrantClient
 
+_project_root = Path(__file__).resolve().parents[1]
+if str(_project_root) not in sys.path:
+    sys.path.insert(0, str(_project_root))
+
 from scripts import embed_config
 
 # Minimum total characters across PDF pages to consider extraction successful (scanned PDFs ~0)
@@ -96,11 +100,21 @@ class Config:
 
 def get_qdrant_client() -> QdrantClient:
     """Initialize and return Qdrant client"""
-    return QdrantClient(
-        url=Config.QDRANT_URL,
-        port=Config.QDRANT_PORT,
-        timeout=Config.QDRANT_TIMEOUT
-    )
+    api_key = os.getenv("QDRANT_API_KEY")
+    url = Config.QDRANT_URL
+    if url and url.startswith("https://"):
+        return QdrantClient(
+            url=url,
+            api_key=api_key,
+            timeout=Config.QDRANT_TIMEOUT
+        )
+    else:
+        return QdrantClient(
+            url=url,
+            port=Config.QDRANT_PORT,
+            api_key=api_key,
+            timeout=Config.QDRANT_TIMEOUT
+        )
 
 
 def delete_qdrant_collection(client: QdrantClient, collection_name: str) -> None:
@@ -505,6 +519,7 @@ def _create_payload_indexes(client: QdrantClient, collection_name: str) -> None:
         ("page_start", PayloadSchemaType.INTEGER),
         ("page_end", PayloadSchemaType.INTEGER),
         ("chunk_id", PayloadSchemaType.KEYWORD),
+        ("is_leaf", PayloadSchemaType.BOOL),
     ]
     
     for field_name, schema_type in indexes:
@@ -707,7 +722,7 @@ def process_file(
     # Embed and upsert
     stats = embed_and_upsert(chunks, file_metadata, embeddings_model, client, qdrant_name)
     
-    logger.info(f"✅ Successfully processed {file_metadata['file_name']}")
+    logger.info(f"[SUCCESS] Successfully processed {file_metadata['file_name']}")
     logger.info(f"   Chunks: {stats['chunks_upserted']}")
     
     return stats
@@ -893,7 +908,7 @@ def save_ingestion_report(collection_name: str, results: List[Dict[str, Any]]) -
 def main():
     """Main CLI entry point"""
     parser = argparse.ArgumentParser(
-        description='Ingest documents: extract text → chunk → embed → upsert to Qdrant',
+        description='Ingest documents: extract text -> chunk -> embed -> upsert to Qdrant',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
@@ -949,10 +964,10 @@ Examples:
             result = process_collection(args.data_root, args.collection, embeddings_model, qdrant_client)
         
         if result.get('status') == 'success':
-            logger.info("\n✅ Ingestion complete!")
+            logger.info("\n[SUCCESS] Ingestion complete!")
             sys.exit(0)
         else:
-            logger.error(f"\n❌ Ingestion failed: {result.get('error')}")
+            logger.error(f"\n[FAILED] Ingestion failed: {result.get('error')}")
             sys.exit(1)
             
     except Exception as e:

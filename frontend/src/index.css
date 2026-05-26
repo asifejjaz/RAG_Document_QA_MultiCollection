@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+  /* Fonts */
+  --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Color Palette (Obsidian & Teal/Violet Glassmorphism) */
+  --bg-app: #030712;
+  --bg-glass: rgba(17, 24, 39, 0.7);
+  --bg-glass-hover: rgba(31, 41, 55, 0.8);
+  --bg-glass-card: rgba(17, 24, 39, 0.5);
+  
+  --border-glass: rgba(255, 255, 255, 0.08);
+  --border-glass-focused: rgba(255, 255, 255, 0.16);
+
+  --accent-cyan: #06b6d4;
+  --accent-cyan-glow: rgba(6, 182, 212, 0.15);
+  --accent-violet: #8b5cf6;
+  --accent-violet-glow: rgba(139, 92, 246, 0.15);
+  
+  --text-primary: #f3f4f6;
+  --text-secondary: #9ca3af;
+  --text-muted: #6b7280;
+
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+
+  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --shadow-accent: 0 0 20px 0 rgba(6, 182, 212, 0.2);
+
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+  background-image: 
+    radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Form inputs & general interactive elements */
+input, button, select, textarea {
+  font-family: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* Micro-animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 15px rgba(6, 182, 212, 0.15); }
+  50% { box-shadow: 0 0 25px rgba(6, 182, 212, 0.3); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fade-in {
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s infinite ease-in-out;
+}
