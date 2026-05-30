@@ -5,7 +5,11 @@ import ChatWindow from './components/ChatWindow';
 import './App.css';
 
 // Dynamically fetch VITE_API_URL from environment or fallback
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+let rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+if (rawApiUrl && !rawApiUrl.startsWith('http://') && !rawApiUrl.startsWith('https://')) {
+  rawApiUrl = `https://${rawApiUrl}`;
+}
+const API_URL = rawApiUrl;
 
 function App() {
   const [activeCollection, setActiveCollection] = useState(null);

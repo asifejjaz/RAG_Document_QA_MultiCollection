@@ -42,4 +42,4 @@ services:
         fromService:
           type: web
           name: eva-research-ai-backend
-          property: url
+          property: host
