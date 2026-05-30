@@ -4,7 +4,7 @@ services:
   - type: web
     name: eva-research-ai-backend
     env: python
-    plan: starter # Starter plan is recommended for RAG apps due to memory limits, but can be scaled/changed
+    plan: free # Free tier plan
     buildCommand: pip install -r backend/requirements.txt
     startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
     envVars:
