@@ -41,7 +41,4 @@ services:
     staticPublishPath: frontend/dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: eva-research-ai-backend
-          property: host
+        value: https://eva-research-ai-backend.onrender.com
