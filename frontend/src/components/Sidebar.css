@@ -356,8 +356,8 @@
   background: rgba(255, 255, 255, 0.01);
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-lg);
-  max-height: 280px;
-  min-height: 180px;
+  max-height: 420px;
+  min-height: 280px;
   overflow-y: auto;
 }
 

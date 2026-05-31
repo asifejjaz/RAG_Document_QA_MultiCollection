@@ -51,7 +51,7 @@
 }
 
 .input-group input {
-  background: rgba(0, 0, 0, 0.2);
+  background: #ffffff;
   border: 1px solid var(--border-glass);
   border-radius: var(--radius-md);
   padding: 10px 14px;
@@ -67,18 +67,18 @@
 
 /* Dropzone styling */
 .dropzone {
-  border: 2px dashed var(--border-glass);
+  border: 2px dashed rgba(0, 0, 0, 0.12);
   border-radius: var(--radius-md);
   padding: 24px;
   text-align: center;
   cursor: pointer;
   transition: var(--transition-smooth);
-  background: rgba(0, 0, 0, 0.1);
+  background: #f8fafc;
   position: relative;
 }
 
 .dropzone:hover {
-  background: rgba(255, 255, 255, 0.01);
+  background: rgba(26, 115, 232, 0.02);
   border-color: var(--accent-cyan);
 }
 

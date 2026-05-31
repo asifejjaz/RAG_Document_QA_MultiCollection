@@ -5,30 +5,30 @@
   --font-display: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Color Palette (Obsidian & Teal/Violet Glassmorphism) */
-  --bg-app: #030712;
-  --bg-glass: rgba(17, 24, 39, 0.7);
-  --bg-glass-hover: rgba(31, 41, 55, 0.8);
-  --bg-glass-card: rgba(17, 24, 39, 0.5);
+  /* Color Palette (Light mode ChatGPT/Gemini inspired) */
+  --bg-app: #ffffff;
+  --bg-glass: #f4f7fa;             /* Sidebar and Header light bg */
+  --bg-glass-hover: #e4e9f0;       /* Hover states */
+  --bg-glass-card: #f8fafc;        /* Card-like components */
   
-  --border-glass: rgba(255, 255, 255, 0.08);
-  --border-glass-focused: rgba(255, 255, 255, 0.16);
+  --border-glass: rgba(0, 0, 0, 0.08);
+  --border-glass-focused: rgba(0, 0, 0, 0.16);
 
-  --accent-cyan: #06b6d4;
-  --accent-cyan-glow: rgba(6, 182, 212, 0.15);
-  --accent-violet: #8b5cf6;
-  --accent-violet-glow: rgba(139, 92, 246, 0.15);
+  --accent-cyan: #1a73e8;          /* Google/Gemini Blue */
+  --accent-cyan-glow: rgba(26, 115, 232, 0.08);
+  --accent-violet: #8b5cf6;        /* Soft violet accent */
+  --accent-violet-glow: rgba(139, 92, 246, 0.08);
   
-  --text-primary: #f3f4f6;
-  --text-secondary: #9ca3af;
-  --text-muted: #6b7280;
+  --text-primary: #1f1f1f;         /* Very dark gray for main text */
+  --text-secondary: #474747;       /* Medium gray for body/labels */
+  --text-muted: #757575;           /* Lighter gray for secondary info */
 
   --success: #10b981;
   --error: #ef4444;
   --warning: #f59e0b;
 
-  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-  --shadow-accent: 0 0 20px 0 rgba(6, 182, 212, 0.2);
+  --shadow-premium: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  --shadow-accent: 0 0 20px 0 rgba(26, 115, 232, 0.1);
 
   --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --radius-sm: 8px;
@@ -50,8 +50,8 @@ body {
   overflow-x: hidden;
   line-height: 1.5;
   background-image: 
-    radial-gradient(at 10% 20%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 90% 80%, rgba(6, 182, 212, 0.12) 0px, transparent 50%);
+    radial-gradient(at 10% 20%, rgba(26, 115, 232, 0.04) 0px, transparent 50%),
+    radial-gradient(at 90% 80%, rgba(139, 92, 246, 0.03) 0px, transparent 50%);
   background-attachment: fixed;
 }
 
@@ -62,16 +62,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.02);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.1);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 
 /* Form inputs & general interactive elements */
