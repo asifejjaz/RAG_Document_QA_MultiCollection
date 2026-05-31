@@ -99,6 +99,9 @@ function App() {
   useEffect(() => {
     if (currentSessionId) {
       fetchSessions(currentSessionId);
+      localStorage.setItem('eva_current_session_id', currentSessionId);
+    } else {
+      localStorage.removeItem('eva_current_session_id');
     }
   }, [currentSessionId, refreshTrigger]);
 
@@ -115,7 +118,11 @@ function App() {
 
   const fetchSessionsAndInit = async () => {
     const loadedSessions = await fetchSessions();
-    if (loadedSessions && loadedSessions.length > 0) {
+    const savedSessionId = localStorage.getItem('eva_current_session_id');
+    
+    if (savedSessionId && loadedSessions && loadedSessions.some(s => s.session_id === savedSessionId)) {
+      setCurrentSessionId(savedSessionId);
+    } else if (loadedSessions && loadedSessions.length > 0) {
       // Pick the most recent session
       setCurrentSessionId(loadedSessions[0].session_id);
     } else {
