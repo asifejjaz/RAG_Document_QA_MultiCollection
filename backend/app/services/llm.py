@@ -56,7 +56,7 @@ class OpenAILLMService(BaseLLMService):
                 model=self._model_name,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=800,
+                max_tokens=4096,
             )
             return resp.choices[0].message.content or ""
         except Exception as e:
@@ -69,7 +69,7 @@ class OpenAILLMService(BaseLLMService):
                 model=self._model_name,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=800,
+                max_tokens=4096,
                 stream=True
             )
             for chunk in stream:
@@ -96,7 +96,7 @@ class AzureLLMService(BaseLLMService):
                 model=self._deployment_name,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=800,
+                max_tokens=4096,
             )
             return resp.choices[0].message.content or ""
         except Exception as e:
@@ -109,7 +109,7 @@ class AzureLLMService(BaseLLMService):
                 model=self._deployment_name,
                 messages=messages,
                 temperature=0.7,
-                max_tokens=800,
+                max_tokens=4096,
                 stream=True
             )
             for chunk in stream:
@@ -190,7 +190,7 @@ class GeminiLLMService(BaseLLMService):
         config = types.GenerateContentConfig(
             system_instruction=system_instruction,
             temperature=0.7,
-            max_output_tokens=800
+            max_output_tokens=4096
         )
         return gemini_contents, config
 
