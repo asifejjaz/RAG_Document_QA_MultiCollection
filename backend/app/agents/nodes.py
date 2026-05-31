@@ -225,9 +225,21 @@ Retrieved Chunks:
             generation_text = llm.generate(chat_messages)
     except Exception as e:
         logger.error("Error in generate node: %s", e)
-        generation_text = "An error occurred while generating the response. Please try again."
+        err_msg = str(e)
+        if "RESOURCE_EXHAUSTED" in err_msg or "429" in err_msg or "quota" in err_msg.lower() or "limit" in err_msg.lower():
+            error_details = (
+                "⚠️ **Gemini API Quota Reached (429 Resource Exhausted)**\n\n"
+                "You have exceeded your current API quota limit for Google Gemini (e.g., the 20 requests/day limit on the free tier).\n\n"
+                "**Details:**\n"
+                f"```\n{err_msg}\n```\n\n"
+                "Please check your billing details, API limits, or try switching to another model (like Azure OpenAI) in the settings."
+            )
+        else:
+            error_details = f"An error occurred while generating the response: {err_msg}"
+        
+        generation_text = error_details
         if on_token:
-            on_token(generation_text)
+            on_token(error_details)
 
     # Append assistant's response to the message history
     assistant_msg = {"role": "assistant", "content": generation_text}

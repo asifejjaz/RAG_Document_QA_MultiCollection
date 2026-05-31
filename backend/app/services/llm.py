@@ -210,6 +210,10 @@ class GeminiLLMService(BaseLLMService):
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    err_lower = err_str.lower()
+                    if "quota" in err_lower or "limit" in err_lower or "freetier" in err_lower or "free_tier" in err_lower or "project" in err_lower or "exceeded" in err_lower:
+                        logger.error("Gemini API daily/project quota exhausted. Not retrying. Error: %s", e)
+                        raise
                     retry_delay = 45.0  # Default fallback
                     try:
                         import re
@@ -249,6 +253,10 @@ class GeminiLLMService(BaseLLMService):
             except Exception as e:
                 err_str = str(e)
                 if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    err_lower = err_str.lower()
+                    if "quota" in err_lower or "limit" in err_lower or "freetier" in err_lower or "free_tier" in err_lower or "project" in err_lower or "exceeded" in err_lower:
+                        logger.error("Gemini API daily/project quota exhausted. Not retrying. Error: %s", e)
+                        raise
                     retry_delay = 45.0  # Default fallback
                     try:
                         import re
