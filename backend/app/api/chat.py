@@ -189,7 +189,7 @@ def stream_chat(req: ChatRequest):
     def event_generator():
         while True:
             try:
-                item = q.get(timeout=120)  # 2 minute timeout
+                item = q.get(timeout=600)  # 10 minute timeout
                 if item is None:
                     break
                 yield f"data: {json.dumps(item)}\n\n"

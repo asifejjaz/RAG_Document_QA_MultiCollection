@@ -121,11 +121,28 @@ class AzureLLMService(BaseLLMService):
 
 
 class GeminiLLMService(BaseLLMService):
+    _last_request_time = 0.0
+    _rate_limit_lock = None
+
     def __init__(self, model_name: str, api_key: str):
         self._model_name = model_name
         self._api_key = api_key
         from google import genai
         self._client = genai.Client(api_key=api_key)
+        import threading
+        if GeminiLLMService._rate_limit_lock is None:
+            GeminiLLMService._rate_limit_lock = threading.Lock()
+
+    def _wait_for_rate_limit(self):
+        import time
+        with GeminiLLMService._rate_limit_lock:
+            now = time.time()
+            elapsed = now - GeminiLLMService._last_request_time
+            if elapsed < 18.0:
+                sleep_time = 18.0 - elapsed
+                logger.info("Rate limiting Gemini API request: sleeping for %.2f seconds to respect 5 RPM limit...", sleep_time)
+                time.sleep(sleep_time)
+            GeminiLLMService._last_request_time = time.time()
 
     def _convert_messages(self, messages: List[Dict[str, Any]]):
         import base64
@@ -178,32 +195,79 @@ class GeminiLLMService(BaseLLMService):
         return gemini_contents, config
 
     def generate(self, messages: List[Dict[str, Any]]) -> str:
-        try:
-            gemini_contents, config = self._convert_messages(messages)
-            resp = self._client.models.generate_content(
-                model=self._model_name,
-                contents=gemini_contents,
-                config=config
-            )
-            return resp.text or ""
-        except Exception as e:
-            logger.error("Gemini completion failed: %s", e)
-            raise
+        import time
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                self._wait_for_rate_limit()
+                gemini_contents, config = self._convert_messages(messages)
+                resp = self._client.models.generate_content(
+                    model=self._model_name,
+                    contents=gemini_contents,
+                    config=config
+                )
+                return resp.text or ""
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    retry_delay = 45.0  # Default fallback
+                    try:
+                        import re
+                        match = re.search(r"retryDelay[\"']:\s*[\"'](\d+)s[\"']", err_str)
+                        if match:
+                            retry_delay = float(match.group(1))
+                        else:
+                            match_alt = re.search(r"retryDelay.*?:.*?(\d+)s", err_str, re.IGNORECASE)
+                            if match_alt:
+                                retry_delay = float(match_alt.group(1))
+                    except Exception as parse_ex:
+                        logger.warning("Failed to parse exact retry delay: %s", parse_ex)
+                    delay = retry_delay + 2.0
+                    logger.warning("Gemini API rate limited (429). Sleeping for %.2f seconds to reset rate limit window (attempt %d/%d)...", delay, attempt + 1, max_retries)
+                    time.sleep(delay)
+                    continue
+                logger.error("Gemini completion failed: %s", e)
+                raise
+        raise Exception("Exhausted retries due to Gemini 429 rate limit.")
 
     def generate_stream(self, messages: List[Dict[str, Any]]) -> Generator[str, None, None]:
-        try:
-            gemini_contents, config = self._convert_messages(messages)
-            response_stream = self._client.models.generate_content_stream(
-                model=self._model_name,
-                contents=gemini_contents,
-                config=config
-            )
-            for chunk in response_stream:
-                if chunk.text:
-                    yield chunk.text
-        except Exception as e:
-            logger.error("Gemini stream failed: %s", e)
-            raise
+        import time
+        max_retries = 5
+        for attempt in range(max_retries):
+            try:
+                self._wait_for_rate_limit()
+                gemini_contents, config = self._convert_messages(messages)
+                response_stream = self._client.models.generate_content_stream(
+                    model=self._model_name,
+                    contents=gemini_contents,
+                    config=config
+                )
+                for chunk in response_stream:
+                    if chunk.text:
+                        yield chunk.text
+                return
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "RESOURCE_EXHAUSTED" in err_str:
+                    retry_delay = 45.0  # Default fallback
+                    try:
+                        import re
+                        match = re.search(r"retryDelay[\"']:\s*[\"'](\d+)s[\"']", err_str)
+                        if match:
+                            retry_delay = float(match.group(1))
+                        else:
+                            match_alt = re.search(r"retryDelay.*?:.*?(\d+)s", err_str, re.IGNORECASE)
+                            if match_alt:
+                                retry_delay = float(match_alt.group(1))
+                    except Exception as parse_ex:
+                        logger.warning("Failed to parse exact retry delay: %s", parse_ex)
+                    delay = retry_delay + 2.0
+                    logger.warning("Gemini API stream rate limited (429). Sleeping for %.2f seconds to reset rate limit window (attempt %d/%d)...", delay, attempt + 1, max_retries)
+                    time.sleep(delay)
+                    continue
+                logger.error("Gemini stream failed: %s", e)
+                raise
+        raise Exception("Exhausted retries due to Gemini 429 rate limit in stream.")
 
 
 class LLMServiceFactory:

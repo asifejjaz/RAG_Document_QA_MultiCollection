@@ -1,0 +1,126 @@
+[
+  {
+    "id": "Q1",
+    "category": "Retrieval & Textual Fact",
+    "question": "What is the International Maritime Organization's (IMO) mandate regarding greenhouse gas (GHG) emissions reduction?",
+    "expected_page": 1,
+    "key_facts": ["IMO", "reduce", "greenhouse gas", "emissions", "50%", "2050"],
+    "negative_test": false
+  },
+  {
+    "id": "Q2",
+    "category": "Retrieval & Textual Fact",
+    "question": "What are the three primary methods of hydrogen delivery to vessels described in Chapter 1?",
+    "expected_page": 1,
+    "key_facts": ["Truck-to-Ship", "Pipeline-to-Ship", "Ship-to-Ship"],
+    "negative_test": false
+  },
+  {
+    "id": "Q3",
+    "category": "Retrieval & Textual Fact",
+    "question": "Compare compressed hydrogen (CH2) and liquefied hydrogen (LH2) in terms of target storage pressure and storage temperature.",
+    "expected_page": 2,
+    "key_facts": ["700 bar", "-253", "cryogenic"],
+    "negative_test": false
+  },
+  {
+    "id": "Q4",
+    "category": "Retrieval & Textual Fact",
+    "question": "What is the flammable range of hydrogen in air, and what are its characteristics during daylight?",
+    "expected_page": 4,
+    "key_facts": ["4%", "75%", "invisible", "daylight"],
+    "negative_test": false
+  },
+  {
+    "id": "Q5",
+    "category": "Retrieval & Textual Fact",
+    "question": "What is the name of the IMO code that governs safety for ships using gases or low-flashpoint fuels?",
+    "expected_page": 6,
+    "key_facts": ["IGF Code", "International Code of Safety for Ships Using Gases or Other Low-Flashpoint Fuels"],
+    "negative_test": false
+  },
+  {
+    "id": "Q6",
+    "category": "Retrieval & Textual Fact",
+    "question": "What are the specific numbers of the ISO standards mentioned for land-based hydrogen refueling stations and fuel cell quality?",
+    "expected_page": 6,
+    "key_facts": ["ISO/TS 19880-1", "ISO 14687"],
+    "negative_test": false
+  },
+  {
+    "id": "Q7",
+    "category": "Retrieval & Textual Fact",
+    "question": "Which EU initiatives are mentioned as pushing for the adoption of clean fuels like hydrogen?",
+    "expected_page": 7,
+    "key_facts": ["Fit-for-55", "REPowerEU"],
+    "negative_test": false
+  },
+  {
+    "id": "Q8",
+    "category": "Table Data & Retrieval",
+    "question": "Based on the table of cost drivers for hydrogen bunkering infrastructure, which storage tank option requires cryogenic insulation and cooling systems, and what is its effect on capital expenditure?",
+    "expected_page": 9,
+    "key_facts": ["liquefied hydrogen", "LH2", "cryogenic", "insulation", "capital expenditure", "CapEx"],
+    "negative_test": false
+  },
+  {
+    "id": "Q9",
+    "category": "Visual/Multimodal Analysis",
+    "question": "Describe the green logo graphic that is repeated on every page of the report.",
+    "expected_page": 1,
+    "key_facts": ["green", "leaf", "circle", "wind turbine", "blades", "shaft"],
+    "negative_test": false
+  },
+  {
+    "id": "Q10",
+    "category": "Visual/Multimodal Analysis",
+    "question": "Are there any pipeline schematics or charts visually depicted in the document? If so, describe them.",
+    "expected_page": 1,
+    "key_facts": ["no", "only", "repeated logo", "watermark", "icon"],
+    "negative_test": false,
+    "refusal_keywords": ["no pipeline", "no charts", "only logo", "does not contain"]
+  },
+  {
+    "id": "Q11",
+    "category": "Citations & Metadata",
+    "question": "Who is the author of this report, what is their job title, what organization do they represent, and what email addresses are provided for contacting them?",
+    "expected_page": 1,
+    "key_facts": ["Eliseo Curcio", "Director of Clean Technologies", "Blend Tiger", "lee@theblendtiger.com", "lee.e.curcio@gmail.com"],
+    "negative_test": false
+  },
+  {
+    "id": "Q12",
+    "category": "Citations & Metadata",
+    "question": "In which specific chapter and section is the environmental impact of hydrogen leakage and its Global Warming Potential (GWP) discussed, and what page is it on?",
+    "expected_page": 12,
+    "key_facts": ["Chapter 4", "Section 4.2", "Hydrogen Leakage", "page 12"],
+    "negative_test": false
+  },
+  {
+    "id": "Q13",
+    "category": "Hallucination & Negative Constraint",
+    "question": "What specific chemical formulas or membrane materials are recommended for the PEM fuel cells in the tugboats at the Port of Antwerp?",
+    "expected_page": null,
+    "key_facts": [],
+    "negative_test": true,
+    "refusal_keywords": ["does not mention", "no information", "insufficient evidence", "not specified", "not mentioned", "unable to find"]
+  },
+  {
+    "id": "Q14",
+    "category": "Hallucination & Negative Constraint",
+    "question": "What is the exact budget in Euros allocated by the Belgian government for the Antwerp tugboat project?",
+    "expected_page": null,
+    "key_facts": [],
+    "negative_test": true,
+    "refusal_keywords": ["does not mention", "no information", "insufficient evidence", "not specified", "not mentioned", "unable to find"]
+  },
+  {
+    "id": "Q15",
+    "category": "Hallucination & Negative Constraint",
+    "question": "Describe the pipeline connection between Rotterdam and Yokohama ports mentioned in Chapter 3.",
+    "expected_page": null,
+    "key_facts": [],
+    "negative_test": true,
+    "refusal_keywords": ["does not mention", "no pipeline", "not mentioned", "no information", "insufficient evidence"]
+  }
+]

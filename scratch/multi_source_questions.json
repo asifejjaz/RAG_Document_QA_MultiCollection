@@ -1,0 +1,162 @@
+[
+  {
+    "id": "Q1",
+    "category": "green_hydrogen",
+    "question": "What is green hydrogen, and how is it produced?",
+    "expected_pages": [1],
+    "key_facts": ["electrolysis", "water", "renewable", "solar", "wind", "electricity"],
+    "negative_test": false
+  },
+  {
+    "id": "Q2",
+    "category": "green_hydrogen",
+    "question": "What are the key goals and milestones of the US National Clean Hydrogen Strategy and Roadmap?",
+    "expected_pages": [1, 2],
+    "key_facts": ["10 million metric tons", "10 MMT", "2030", "20 MMT", "2040", "50 MMT", "2050", "US National Clean Hydrogen Strategy"],
+    "negative_test": false
+  },
+  {
+    "id": "Q3",
+    "category": "green_hydrogen",
+    "question": "Explain the efficiency losses in green hydrogen production through water electrolysis.",
+    "expected_pages": [3],
+    "key_facts": ["efficiency", "electrolyzer", "losses", "60%", "80%", "heat"],
+    "negative_test": false
+  },
+  {
+    "id": "Q4",
+    "category": "green_hydrogen",
+    "question": "What are the main challenges to scaling up green hydrogen production outlined in the 'Race to Success' reports?",
+    "expected_pages": [1, 2],
+    "key_facts": ["production costs", "infrastructure", "electrolyzers", "CapEx", "renewable energy"],
+    "negative_test": false
+  },
+  {
+    "id": "Q5",
+    "category": "green_hydrogen",
+    "question": "What is the cost target for clean hydrogen production by 2031 set by the US Department of Energy (DOE)?",
+    "expected_pages": [1],
+    "key_facts": ["$1", "1 kilogram", "1 decade", "Hydrogen Shot", "DOE", "2031"],
+    "negative_test": false
+  },
+  {
+    "id": "Q6",
+    "category": "hydrogen_bunkering",
+    "question": "Compare the storage parameters of compressed gaseous hydrogen (CH2) and liquefied cryogenic hydrogen (LH2) used in bunkering.",
+    "expected_pages": [2],
+    "key_facts": ["350 bar", "700 bar", "cryogenic", "-253", "liquid"],
+    "negative_test": false
+  },
+  {
+    "id": "Q7",
+    "category": "hydrogen_bunkering",
+    "question": "What are the three main delivery methods for refueling vessels with hydrogen bunkering?",
+    "expected_pages": [1, 2],
+    "key_facts": ["Truck-to-Ship", "Pipeline-to-Ship", "Ship-to-Ship"],
+    "negative_test": false
+  },
+  {
+    "id": "Q8",
+    "category": "hydrogen_bunkering",
+    "question": "What is the International Code of Safety for Ships Using Gases or Other Low-Flashpoint Fuels, and what does it cover?",
+    "expected_pages": [6],
+    "key_facts": ["IGF Code", "IMO", "low-flashpoint", "safety", "storage", "leak detection", "ESD"],
+    "negative_test": false
+  },
+  {
+    "id": "Q9",
+    "category": "hydrogen_bunkering",
+    "question": "What are the key safety hazards of hydrogen bunkering operations, and what mitigation technologies are used?",
+    "expected_pages": [4, 5],
+    "key_facts": ["flammability", "4%", "75%", "invisible", "leak", "ESD", "water curtain"],
+    "negative_test": false
+  },
+  {
+    "id": "Q10",
+    "category": "hydrogen_bunkering",
+    "question": "Which ports are leading early adopters of hydrogen bunkering infrastructure, and what pilot projects are they running?",
+    "expected_pages": [7, 8],
+    "key_facts": ["Rotterdam", "Antwerp", "tugboat", "Yokohama"],
+    "negative_test": false
+  },
+  {
+    "id": "Q11",
+    "category": "ammonia_fuel",
+    "question": "Why is ammonia considered a potential zero-carbon marine fuel, and what are its chemical properties?",
+    "expected_pages": [1, 2],
+    "key_facts": ["NH3", "no carbon", "-33", "atmospheric pressure", "combustion"],
+    "negative_test": false
+  },
+  {
+    "id": "Q12",
+    "category": "ammonia_fuel",
+    "question": "What are the catastrophic risks and toxicity concerns associated with ammonia bunkering?",
+    "expected_pages": [2, 3],
+    "key_facts": ["toxic", "toxicity", "exposure", "lungs", "dispersion", "containment"],
+    "negative_test": false
+  },
+  {
+    "id": "Q13",
+    "category": "ammonia_fuel",
+    "question": "What safety protocols are recommended to mitigate toxicity risks during ammonia ship-to-ship bunkering?",
+    "expected_pages": [4],
+    "key_facts": ["dry-break", "release collars", "PPE", "respirators", "scrubbing", "toxic"],
+    "negative_test": false
+  },
+  {
+    "id": "Q14",
+    "category": "ammonia_fuel",
+    "question": "Compare the flammability properties of ammonia vs. hydrogen.",
+    "expected_pages": [2],
+    "key_facts": ["flammability range", "15-28%", "4-75%", "ignition energy"],
+    "negative_test": false
+  },
+  {
+    "id": "Q15",
+    "category": "ammonia_fuel",
+    "question": "What regulatory codes govern the safe use of ammonia as a marine fuel?",
+    "expected_pages": [6],
+    "key_facts": ["IGF Code", "IMO", "DNV", "classification"],
+    "negative_test": false
+  },
+  {
+    "id": "Q16",
+    "category": "multi_source",
+    "question": "Compare the safety hazards, storage temperatures, and energy densities of ammonia vs. liquefied hydrogen (LH2) as alternative marine fuels.",
+    "expected_pages": null,
+    "key_facts": ["-253", "-33", "toxicity", "flammability", "energy density"],
+    "negative_test": false
+  },
+  {
+    "id": "Q17",
+    "category": "multi_source",
+    "question": "How does the regulatory framework for hydrogen bunkering under the IGF Code compare with the safety frameworks being drafted for ammonia fuel?",
+    "expected_pages": null,
+    "key_facts": ["IGF Code", "low-flashpoint", "ventilation", "toxicity", "scrubbers", "PPE"],
+    "negative_test": false
+  },
+  {
+    "id": "Q18",
+    "category": "multi_source",
+    "question": "Evaluate the resource intensity and environmental impacts of producing green hydrogen vs. green ammonia.",
+    "expected_pages": null,
+    "key_facts": ["electrolysis", "renewable electricity", "Haber-Bosch", "nitrogen", "leakage", "GWP"],
+    "negative_test": false
+  },
+  {
+    "id": "Q19",
+    "category": "multi_source",
+    "question": "According to the Clean Air Action plans at leading global ports (e.g. Rotterdam, Antwerp, Los Angeles), how are hydrogen bunkering and ammonia integration being prioritized?",
+    "expected_pages": null,
+    "key_facts": ["multi-fuel", "Rotterdam", "Antwerp", "Los Angeles", "tugboats", "trucks"],
+    "negative_test": false
+  },
+  {
+    "id": "Q20",
+    "category": "multi_source",
+    "question": "Discuss the levelized cost of alternative marine fuels (LH2 vs. Ammonia vs. E-Fuels) based on production and infrastructure scaling.",
+    "expected_pages": null,
+    "key_facts": ["levelized cost", "CapEx", "electrolyzer", "ammonia", "e-fuels"],
+    "negative_test": false
+  }
+]
