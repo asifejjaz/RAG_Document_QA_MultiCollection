@@ -163,4 +163,7 @@ __marimo__/
 build_rag_phase1_response_doc.py
 
 # Generated assets and models files
-data/assets/
+data/assets/
+
+# Sessions
+sessions/*.json
