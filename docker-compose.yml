@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    container_name: rag-qdrant-local
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data_local:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+    networks:
+      - local-network
+
+  # FastAPI Backend Service
+  backend:
+    image: python:3.11-slim
+    container_name: rag-backend-local
+    working_dir: /app
+    volumes:
+      - .:/app
+      - pip_cache:/root/.cache/pip
+    environment:
+      - DATA_ROOT=/app/data
+      - STATE_ROOT=/app/state
+      - QDRANT_URL=http://qdrant:6333
+      - VECTOR_DB_URL=http://qdrant:6333
+      - PYTHONPATH=/app
+    env_file: .env
+    # Install dependencies and start FastAPI with hot-reloading
+    command: bash -c "pip install -r backend/requirements.txt && uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --reload"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    restart: unless-stopped
+    networks:
+      - local-network
+
+  # Vite/React Frontend Service
+  frontend:
+    image: node:20-alpine
+    container_name: rag-frontend-local
+    working_dir: /app/frontend
+    volumes:
+      - ./frontend:/app/frontend
+      # Anonymous volume for node_modules to ensure native bindings work in Alpine
+      - /app/frontend/node_modules
+    # Install dependencies and start Vite with hot-reloading exposed to the network
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - local-network
+
+volumes:
+  qdrant_data_local:
+    name: qdrant_data_local
+  pip_cache:
+    name: pip_cache
+
+networks:
+  local-network:
+    driver: bridge

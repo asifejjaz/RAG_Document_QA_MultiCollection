@@ -12,7 +12,7 @@ load_dotenv()
 # Sidebar "Embedding / answer provider" grouping
 EMBEDDING_PROVIDER_AZURE = "azure"
 EMBEDDING_PROVIDER_OPENAI = "openai"
-EMBEDDING_PROVIDER_LOCAL = "local"
+EMBEDDING_PROVIDER_GEMINI = "gemini"
 
 
 def get_openai_api_key() -> Optional[str]:
@@ -26,8 +26,8 @@ def _embedding_provider_for_entry(entry: Dict[str, Any]) -> str:
         return EMBEDDING_PROVIDER_AZURE
     if t == "openai_platform":
         return EMBEDDING_PROVIDER_OPENAI
-    if t == "sentence_transformers":
-        return EMBEDDING_PROVIDER_LOCAL
+    if t == "voyage":
+        return EMBEDDING_PROVIDER_GEMINI
     return EMBEDDING_PROVIDER_AZURE
 
 
@@ -50,14 +50,6 @@ def _embedding_registry() -> List[Dict[str, Any]]:
             },
         },
         {
-            "id": "bge_m3",
-            "label": "BGE-M3 (sentence-transformers)",
-            "type": "sentence_transformers",
-            "model": os.getenv("BGE_M3_MODEL", "BAAI/bge-m3"),
-            "dimension": 1024,
-            "params": {},
-        },
-        {
             "id": "openai_small",
             "label": "OpenAI API (text-embedding-3-small)",
             "type": "openai_platform",
@@ -73,6 +65,16 @@ def _embedding_registry() -> List[Dict[str, Any]]:
             "dimension": 1536,
             "params": {},
         },
+        {
+            "id": "voyage_3_lite",
+            "label": "Voyage AI (voyage-3-lite)",
+            "type": "voyage",
+            "model": "voyage-3-lite",
+            "dimension": 512,
+            "params": {
+                "api_key": os.getenv("VOYAGE_API_KEY"),
+            },
+        },
     ]
 
 
@@ -85,7 +87,7 @@ def get_embedding_options() -> List[Dict[str, Any]]:
 
 
 def get_embedding_options_for_provider(provider_id: str) -> List[Dict[str, Any]]:
-    """Embedding choices for the selected provider (Azure / OpenAI.com / Local)."""
+    """Embedding choices for the selected provider (Azure / OpenAI.com / Gemini)."""
     return [
         {"id": e["id"], "label": e["label"], "dimension": e["dimension"]}
         for e in _embedding_registry()
@@ -96,40 +98,45 @@ def get_embedding_options_for_provider(provider_id: str) -> List[Dict[str, Any]]
 def get_llm_options_for_provider(provider_id: str) -> List[Dict[str, Any]]:
     """Answer-model choices for the selected provider."""
     all_llm = _llm_registry()
-    if provider_id == EMBEDDING_PROVIDER_LOCAL:
-        return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] == "ollama"]
+    if provider_id == EMBEDDING_PROVIDER_GEMINI:
+        return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] == "gemini"]
     if provider_id == EMBEDDING_PROVIDER_OPENAI:
-        return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] in ("openai_platform", "ollama")]
-    # Azure path: Azure chat + Ollama alternatives
-    return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] in ("azure", "ollama")]
+        return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] == "openai_platform"]
+    # Azure path: Azure chat
+    return [{"id": e["id"], "label": e["label"]} for e in all_llm if e["type"] == "azure"]
 
 
 def list_embedding_provider_choices() -> List[Dict[str, str]]:
-    """Providers available in the UI (OpenAI omitted if no API key)."""
-    out: List[Dict[str, str]] = [
-        {"id": EMBEDDING_PROVIDER_AZURE, "label": "Azure OpenAI"},
-    ]
+    """Providers available in the UI (OpenAI omitted if no API key, Azure omitted if ENABLE_AZURE is False)."""
+    out: List[Dict[str, str]] = []
+    
+    enable_azure = os.getenv("ENABLE_AZURE", "true").strip().lower() != "false"
+    if enable_azure:
+        out.append({"id": EMBEDDING_PROVIDER_AZURE, "label": "Azure OpenAI"})
+        
     if get_openai_api_key():
         out.append({"id": EMBEDDING_PROVIDER_OPENAI, "label": "OpenAI (API)"})
-    out.append({"id": EMBEDDING_PROVIDER_LOCAL, "label": "Local (BGE-M3 + Ollama)"})
+    if os.getenv("GEMINI_API_KEY") and os.getenv("VOYAGE_API_KEY"):
+        out.append({"id": EMBEDDING_PROVIDER_GEMINI, "label": "Google Gemini & Voyage AI"})
     return out
 
 
 def infer_embedding_provider_from_env() -> str:
     """Initial sidebar provider from EMBED_MODEL / DEFAULT_LLM (only valid if keys exist)."""
+    enable_azure = os.getenv("ENABLE_AZURE", "true").strip().lower() != "false"
     em = os.getenv("EMBED_MODEL", "openai_small")
+    if em == "voyage_3_lite":
+        return EMBEDDING_PROVIDER_GEMINI
     if em in ("openai_small", "openai_ada"):
         if get_openai_api_key():
             return EMBEDDING_PROVIDER_OPENAI
-        return EMBEDDING_PROVIDER_AZURE
-    if em == "bge_m3":
-        return EMBEDDING_PROVIDER_LOCAL
+        return EMBEDDING_PROVIDER_AZURE if enable_azure else EMBEDDING_PROVIDER_GEMINI
     dl = os.getenv("DEFAULT_LLM", "openai")
     if dl == "openai" and get_openai_api_key():
         return EMBEDDING_PROVIDER_OPENAI
-    if dl in ("ollama_qwen2.5", "ollama_llama3.1"):
-        return EMBEDDING_PROVIDER_LOCAL
-    return EMBEDDING_PROVIDER_AZURE
+    if dl == "gemini_2_5_flash":
+        return EMBEDDING_PROVIDER_GEMINI
+    return EMBEDDING_PROVIDER_AZURE if enable_azure else EMBEDDING_PROVIDER_GEMINI
 
 
 def get_embedding_dimension(embedding_id: Optional[str] = None) -> int:
@@ -141,10 +148,22 @@ def get_embedding_dimension(embedding_id: Optional[str] = None) -> int:
     return _embedding_registry()[0]["dimension"]
 
 
+class VoyageLangChainEmbeddings:
+    def __init__(self, model: str, api_key: str):
+        self.model = model
+        import voyageai
+        self.client = voyageai.Client(api_key=api_key)
+        
+    def embed_query(self, text: str) -> List[float]:
+        return self.client.embed([text], model=self.model, input_type="query").embeddings[0]
+        
+    def embed_documents(self, texts: List[str]) -> List[List[float]]:
+        return self.client.embed(texts, model=self.model, input_type="document").embeddings
+
+
 def get_embeddings_model(embedding_id: Optional[str] = None):
     """
     Return a LangChain-compatible embedding client (embed_documents, embed_query).
-    Lazy-loads sentence-transformers so OpenAI-only startup stays fast.
     """
     rid = embedding_id or os.getenv("EMBED_MODEL", "openai_small")
     for e in _embedding_registry():
@@ -158,32 +177,25 @@ def get_embeddings_model(embedding_id: Optional[str] = None):
                 api_key=e["params"].get("api_key"),
                 openai_api_version=e["params"].get("api_version", "2023-05-15"),
             )
-        if e["type"] == "sentence_transformers":
-            from langchain_community.embeddings import HuggingFaceEmbeddings
-            return HuggingFaceEmbeddings(
-                model_name=e["model"],
-                model_kwargs={"trust_remote_code": True},
-            )
         if e["type"] == "openai_platform":
             from langchain_openai import OpenAIEmbeddings
             return OpenAIEmbeddings(
                 model=e["model"],
                 api_key=get_openai_api_key(),
             )
+        if e["type"] == "voyage":
+            return VoyageLangChainEmbeddings(
+                model=e["model"],
+                api_key=e["params"].get("api_key") or os.getenv("VOYAGE_API_KEY"),
+            )
     # fallback to first
     first = _embedding_registry()[0]
-    if first["type"] == "azure":
-        from langchain_openai import AzureOpenAIEmbeddings
-        return AzureOpenAIEmbeddings(
-            model=first["model"],
-            azure_endpoint=first["params"].get("azure_endpoint"),
-            api_key=first["params"].get("api_key"),
-            openai_api_version=first["params"].get("api_version", "2023-05-15"),
-        )
-    from langchain_community.embeddings import HuggingFaceEmbeddings
-    return HuggingFaceEmbeddings(
-        model_name=first["model"],
-        model_kwargs={"trust_remote_code": True},
+    from langchain_openai import AzureOpenAIEmbeddings
+    return AzureOpenAIEmbeddings(
+        model=first["model"],
+        azure_endpoint=first["params"].get("azure_endpoint"),
+        api_key=first["params"].get("api_key"),
+        openai_api_version=first["params"].get("api_version", "2023-05-15"),
     )
 
 
@@ -193,14 +205,11 @@ def get_embeddings_model(embedding_id: Optional[str] = None):
 
 def _llm_registry() -> List[Dict[str, Any]]:
     azure_deploy = os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "my-gpt-4.1")
-    primary = os.getenv("LOCAL_LLM_MODEL_PRIMARY", "qwen2.5:7b-instruct")
-    secondary = os.getenv("LOCAL_LLM_MODEL_SECONDARY", "llama3.1:8b-instruct")
     openai_chat = os.getenv("OPENAI_CHAT_MODEL", "gpt-4o-mini")
     entries: List[Dict[str, Any]] = [
         {"id": "azure", "label": f"Azure ({azure_deploy})", "type": "azure", "model": azure_deploy},
         {"id": "openai", "label": f"OpenAI ({openai_chat})", "type": "openai_platform", "model": openai_chat},
-        {"id": "ollama_qwen2.5", "label": f"Ollama: {primary}", "type": "ollama", "model": primary},
-        {"id": "ollama_llama3.1", "label": f"Ollama: {secondary}", "type": "ollama", "model": secondary},
+        {"id": "gemini_2_5_flash", "label": "Gemini (gemini-2.5-flash)", "type": "gemini", "model": "gemini-2.5-flash"},
     ]
     return entries
 
@@ -211,25 +220,14 @@ def get_llm_options() -> List[Dict[str, Any]]:
 
 
 def get_default_llm_id() -> str:
-    return os.getenv("DEFAULT_LLM", "openai")
+    return os.getenv("DEFAULT_LLM", "gemini_2_5_flash")
 
 
 def is_ollama(llm_id: Optional[str]) -> bool:
-    if not llm_id:
-        return False
-    for e in _llm_registry():
-        if e["id"] == llm_id:
-            return e["type"] == "ollama"
     return False
 
 
 def get_ollama_model_name(llm_id: Optional[str]) -> Optional[str]:
-    """Return Ollama model name (e.g. qwen2.5:7b-instruct) for the given llm_id."""
-    if not llm_id:
-        return None
-    for e in _llm_registry():
-        if e["id"] == llm_id and e["type"] == "ollama":
-            return e["model"]
     return None
 
 
@@ -250,6 +248,15 @@ def is_azure(llm_id: Optional[str]) -> bool:
     for e in _llm_registry():
         if e["id"] == llm_id:
             return e["type"] == "azure"
+    return False
+
+
+def is_gemini(llm_id: Optional[str]) -> bool:
+    if not llm_id:
+        return False
+    for e in _llm_registry():
+        if e["id"] == llm_id:
+            return e["type"] == "gemini"
     return False
 
 

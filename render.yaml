@@ -1,0 +1,44 @@
+# Render Blueprint Specification for Eva Research AI
+services:
+  # Backend FastAPI Web Service
+  - type: web
+    name: eva-research-ai-backend
+    env: python
+    plan: free # Free tier plan
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: PYTHONPATH
+        value: .
+      - key: DATA_ROOT
+        value: ./data
+      - key: STATE_ROOT
+        value: ./state
+      - key: SESSIONS_DIR
+        value: ./sessions
+      - key: OPENAI_API_KEY
+        sync: false # Set in Render dashboard
+      - key: GEMINI_API_KEY
+        sync: false # Set in Render dashboard
+      - key: VOYAGE_API_KEY
+        sync: false # Set in Render dashboard
+      - key: QDRANT_URL
+        sync: false # Set in Render dashboard
+      - key: QDRANT_API_KEY
+        sync: false # Set in Render dashboard
+      - key: DEFAULT_LLM
+        value: gemini_2_5_flash
+      - key: EMBED_MODEL
+        value: voyage_3_lite
+
+  # Frontend Static Site
+  - type: web
+    name: eva-research-ai-frontend
+    env: static
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://eva-research-ai-backend.onrender.com
