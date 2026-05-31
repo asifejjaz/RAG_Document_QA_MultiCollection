@@ -107,10 +107,13 @@ def get_llm_options_for_provider(provider_id: str) -> List[Dict[str, Any]]:
 
 
 def list_embedding_provider_choices() -> List[Dict[str, str]]:
-    """Providers available in the UI (OpenAI omitted if no API key)."""
-    out: List[Dict[str, str]] = [
-        {"id": EMBEDDING_PROVIDER_AZURE, "label": "Azure OpenAI"},
-    ]
+    """Providers available in the UI (OpenAI omitted if no API key, Azure omitted if ENABLE_AZURE is False)."""
+    out: List[Dict[str, str]] = []
+    
+    enable_azure = os.getenv("ENABLE_AZURE", "true").strip().lower() != "false"
+    if enable_azure:
+        out.append({"id": EMBEDDING_PROVIDER_AZURE, "label": "Azure OpenAI"})
+        
     if get_openai_api_key():
         out.append({"id": EMBEDDING_PROVIDER_OPENAI, "label": "OpenAI (API)"})
     if os.getenv("GEMINI_API_KEY") and os.getenv("VOYAGE_API_KEY"):
@@ -120,19 +123,20 @@ def list_embedding_provider_choices() -> List[Dict[str, str]]:
 
 def infer_embedding_provider_from_env() -> str:
     """Initial sidebar provider from EMBED_MODEL / DEFAULT_LLM (only valid if keys exist)."""
+    enable_azure = os.getenv("ENABLE_AZURE", "true").strip().lower() != "false"
     em = os.getenv("EMBED_MODEL", "openai_small")
     if em == "voyage_3_lite":
         return EMBEDDING_PROVIDER_GEMINI
     if em in ("openai_small", "openai_ada"):
         if get_openai_api_key():
             return EMBEDDING_PROVIDER_OPENAI
-        return EMBEDDING_PROVIDER_AZURE
+        return EMBEDDING_PROVIDER_AZURE if enable_azure else EMBEDDING_PROVIDER_GEMINI
     dl = os.getenv("DEFAULT_LLM", "openai")
     if dl == "openai" and get_openai_api_key():
         return EMBEDDING_PROVIDER_OPENAI
     if dl == "gemini_2_5_flash":
         return EMBEDDING_PROVIDER_GEMINI
-    return EMBEDDING_PROVIDER_AZURE
+    return EMBEDDING_PROVIDER_AZURE if enable_azure else EMBEDDING_PROVIDER_GEMINI
 
 
 def get_embedding_dimension(embedding_id: Optional[str] = None) -> int:
