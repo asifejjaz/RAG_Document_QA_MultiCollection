@@ -18,6 +18,14 @@ tpl.env.cache = None  # workaround: Jinja LRUCache key breaks under Python 3.14
 CTX = {"product": config.PRODUCT_NAME, "tagline": config.TAGLINE}
 
 
+def client_ip(request: Request) -> str:
+    """Real client IP behind Caddy (X-Forwarded-For), else socket peer."""
+    xff = request.headers.get("x-forwarded-for")
+    if xff:
+        return xff.split(",")[0].strip()
+    return request.client.host if request.client else ""
+
+
 # ---------- pages ----------
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):
@@ -56,11 +64,18 @@ def login(request: Request, email: str = Form(...), password: str = Form(...)):
 @app.post("/signup")
 def signup(request: Request, email: str = Form(...), password: str = Form(...)):
     email = email.strip().lower()
+    ip = client_ip(request)
+    err = lambda m: tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": m})
     if len(password) < 6:
-        return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": "Password must be at least 6 characters."})
+        return err("Password must be at least 6 characters.")
+    domain = email.rsplit("@", 1)[-1] if "@" in email else ""
+    if domain in config.DISPOSABLE_DOMAINS:
+        return err("Please use a permanent email address (disposable domains aren't allowed).")
     if db.get_user_by_email(email):
-        return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": "That email is already registered."})
-    uid = db.create_user(email, auth.hash_pw(password))
+        return err("That email is already registered.")
+    if db.signups_from_ip(ip) >= config.MAX_SIGNUPS_PER_IP_DAY:
+        return err("Too many accounts created from your network today. Please contact us to request access.")
+    uid = db.create_user(email, auth.hash_pw(password), signup_ip=ip)
     resp = RedirectResponse("/app", status_code=302)
     resp.set_cookie(auth.COOKIE, auth.make_cookie(uid), httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
     return resp
@@ -77,6 +92,7 @@ def logout():
 @app.post("/api/ingest")
 async def api_ingest(request: Request, files: list[UploadFile] = File(...)):
     user = auth.require_user(request)
+    ip = client_ip(request)
     results = []
     for f in files:
         dest = config.UPLOADS / f"{uuid.uuid4()}_{Path(f.filename).name}"
@@ -91,7 +107,7 @@ async def api_ingest(request: Request, files: list[UploadFile] = File(...)):
             r = ingest.ingest_file(user["id"], dest, f.filename)
             if r["doc_id"]:
                 db.add_document(user["id"], r["doc_id"], f.filename, r["chunks"])
-                db.log_usage(user["id"], "ingest", embed_t=r["embed_tokens"])
+                db.log_usage(user["id"], "ingest", embed_t=r["embed_tokens"], ip=ip)
                 results.append({"filename": f.filename, "chunks": r["chunks"]})
             else:
                 results.append({"filename": f.filename, "error": "no extractable text"})
@@ -111,6 +127,7 @@ def api_docs(request: Request):
 @app.post("/api/chat")
 async def api_chat(request: Request):
     user = auth.require_user(request)
+    ip = client_ip(request)
     payload = await request.json()
     question = (payload.get("question") or "").strip()
     doc_id = payload.get("doc_id") or None
@@ -118,9 +135,14 @@ async def api_chat(request: Request):
         raise HTTPException(400, "empty question")
     if len(question) > 1000:
         raise HTTPException(400, "question too long")
+    # cost caps (per user, then per IP across accounts)
+    if db.tokens_today_user(user["id"]) >= config.USER_DAILY_TOKEN_CAP:
+        return {"answer": "You've reached today's usage limit for this account. It resets tomorrow — or contact us to raise it.", "sources": [], "usage": {"embed_tokens": 0, "prompt_tokens": 0, "output_tokens": 0}, "limited": True}
+    if db.tokens_today_ip(ip) >= config.IP_DAILY_TOKEN_CAP:
+        return {"answer": "The daily usage limit for your network has been reached. Please contact us to continue.", "sources": [], "usage": {"embed_tokens": 0, "prompt_tokens": 0, "output_tokens": 0}, "limited": True}
     res = chat.answer(user["id"], question, doc_id=doc_id)
     u = res["usage"]
-    db.log_usage(user["id"], "chat", embed_t=u["embed_tokens"], prompt_t=u["prompt_tokens"], output_t=u["output_tokens"])
+    db.log_usage(user["id"], "chat", embed_t=u["embed_tokens"], prompt_t=u["prompt_tokens"], output_t=u["output_tokens"], ip=ip)
     return res
 
 

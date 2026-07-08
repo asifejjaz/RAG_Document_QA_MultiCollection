@@ -31,3 +31,14 @@ TOP_K = 6
 MAX_UPLOAD_MB = 25
 
 COLLECTION = "chunks"
+
+# ---- Abuse / cost controls ----
+MAX_SIGNUPS_PER_IP_DAY = 3          # new accounts per IP per 24h
+USER_DAILY_TOKEN_CAP = 120_000     # tokens per user per day
+IP_DAILY_TOKEN_CAP = 300_000       # tokens per IP per day (across all its accounts)
+DISPOSABLE_DOMAINS = {
+    "mailinator.com", "tempmail.com", "temp-mail.org", "10minutemail.com",
+    "guerrillamail.com", "yopmail.com", "trashmail.com", "getnada.com",
+    "sharklasers.com", "dispostable.com", "maildrop.cc", "fakeinbox.com",
+    "throwawaymail.com", "mohmal.com", "emailondeck.com", "tempmail.plus",
+}
