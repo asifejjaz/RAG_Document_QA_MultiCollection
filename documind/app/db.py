@@ -49,6 +49,8 @@ def init():
             "ALTER TABLE users ADD COLUMN signup_ip TEXT",
             "ALTER TABLE users ADD COLUMN provider TEXT DEFAULT 'password'",
             "ALTER TABLE usage ADD COLUMN ip TEXT",
+            "ALTER TABLE documents ADD COLUMN folder TEXT DEFAULT 'General'",
+            "ALTER TABLE documents ADD COLUMN numeric_score REAL DEFAULT 1.0",
         ):
             try:
                 c.execute(stmt)
@@ -113,16 +115,28 @@ def get_user(uid: int):
         return c.execute("SELECT * FROM users WHERE id=?", (uid,)).fetchone()
 
 
-def add_document(user_id: int, doc_id: str, filename: str, chunks: int):
+def add_document(user_id: int, doc_id: str, filename: str, chunks: int, folder: str = "General", numeric_score: float = 1.0):
     with conn() as c:
-        c.execute("INSERT INTO documents(user_id, doc_id, filename, chunks) VALUES (?,?,?,?)",
-                  (user_id, doc_id, filename, chunks))
+        c.execute("INSERT INTO documents(user_id, doc_id, filename, chunks, folder, numeric_score) VALUES (?,?,?,?,?,?)",
+                  (user_id, doc_id, filename, chunks, folder, numeric_score))
 
 
-def list_documents(user_id: int):
+def list_documents(user_id: int, folder: str | None = None):
+    q = "SELECT doc_id, filename, chunks, folder, numeric_score, created_at FROM documents WHERE user_id=?"
+    args: list = [user_id]
+    if folder:
+        q += " AND folder=?"
+        args.append(folder)
+    q += " ORDER BY id DESC"
+    with conn() as c:
+        return [dict(r) for r in c.execute(q, args)]
+
+
+def list_folders(user_id: int):
     with conn() as c:
         return [dict(r) for r in c.execute(
-            "SELECT doc_id, filename, chunks, created_at FROM documents WHERE user_id=? ORDER BY id DESC", (user_id,))]
+            "SELECT folder, COUNT(*) docs, COALESCE(SUM(chunks),0) chunks FROM documents "
+            "WHERE user_id=? GROUP BY folder ORDER BY folder", (user_id,))]
 
 
 def log_usage(user_id: int, kind: str, embed_t=0, prompt_t=0, output_t=0, ip: str = ""):

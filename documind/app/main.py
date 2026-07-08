@@ -90,9 +90,10 @@ def logout():
 
 # ---------- API ----------
 @app.post("/api/ingest")
-async def api_ingest(request: Request, files: list[UploadFile] = File(...)):
+async def api_ingest(request: Request, files: list[UploadFile] = File(...), folder: str = Form(config.DEFAULT_FOLDER)):
     user = auth.require_user(request)
     ip = client_ip(request)
+    folder = (folder or config.DEFAULT_FOLDER).strip()[:60] or config.DEFAULT_FOLDER
     results = []
     for f in files:
         dest = config.UPLOADS / f"{uuid.uuid4()}_{Path(f.filename).name}"
@@ -104,11 +105,12 @@ async def api_ingest(request: Request, files: list[UploadFile] = File(...)):
             results.append({"filename": f.filename, "error": f"exceeds {config.MAX_UPLOAD_MB}MB"})
             continue
         try:
-            r = ingest.ingest_file(user["id"], dest, f.filename)
+            r = ingest.ingest_file(user["id"], dest, f.filename, folder)
             if r["doc_id"]:
-                db.add_document(user["id"], r["doc_id"], f.filename, r["chunks"])
+                num = r.get("numeric") or {"score": 1.0}
+                db.add_document(user["id"], r["doc_id"], f.filename, r["chunks"], folder=folder, numeric_score=num["score"])
                 db.log_usage(user["id"], "ingest", embed_t=r["embed_tokens"], ip=ip)
-                results.append({"filename": f.filename, "chunks": r["chunks"]})
+                results.append({"filename": f.filename, "chunks": r["chunks"], "folder": folder, "numeric": r.get("numeric")})
             else:
                 results.append({"filename": f.filename, "error": "no extractable text"})
         except Exception as e:
@@ -121,7 +123,13 @@ async def api_ingest(request: Request, files: list[UploadFile] = File(...)):
 @app.get("/api/docs")
 def api_docs(request: Request):
     user = auth.require_user(request)
-    return {"documents": db.list_documents(user["id"])}
+    return {"documents": db.list_documents(user["id"]), "folders": db.list_folders(user["id"])}
+
+
+@app.get("/api/folders")
+def api_folders(request: Request):
+    user = auth.require_user(request)
+    return {"folders": db.list_folders(user["id"])}
 
 
 @app.post("/api/chat")
@@ -131,6 +139,7 @@ async def api_chat(request: Request):
     payload = await request.json()
     question = (payload.get("question") or "").strip()
     doc_id = payload.get("doc_id") or None
+    folder = payload.get("folder") or None
     if not question:
         raise HTTPException(400, "empty question")
     if len(question) > 1000:
@@ -140,7 +149,7 @@ async def api_chat(request: Request):
         return {"answer": "You've reached today's usage limit for this account. It resets tomorrow — or contact us to raise it.", "sources": [], "usage": {"embed_tokens": 0, "prompt_tokens": 0, "output_tokens": 0}, "limited": True}
     if db.tokens_today_ip(ip) >= config.IP_DAILY_TOKEN_CAP:
         return {"answer": "The daily usage limit for your network has been reached. Please contact us to continue.", "sources": [], "usage": {"embed_tokens": 0, "prompt_tokens": 0, "output_tokens": 0}, "limited": True}
-    res = chat.answer(user["id"], question, doc_id=doc_id)
+    res = chat.answer(user["id"], question, folder=folder, doc_id=doc_id)
     u = res["usage"]
     db.log_usage(user["id"], "chat", embed_t=u["embed_tokens"], prompt_t=u["prompt_tokens"], output_t=u["output_tokens"], ip=ip)
     return res

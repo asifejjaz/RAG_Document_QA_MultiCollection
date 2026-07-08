@@ -24,11 +24,13 @@ EMBED_DIM = 512
 GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash"]
 GEMINI_VISION_MODEL = "gemini-2.5-flash"
 
-# RAG params
-CHUNK_CHARS = 1100
-CHUNK_OVERLAP = 150
+# RAG params — hierarchical (parent -> child) chunking, matches the repo's approach
+PARENT_CHARS = 1200
+CHILD_CHARS = 480
+CHILD_OVERLAP = 80
 TOP_K = 6
 MAX_UPLOAD_MB = 25
+DEFAULT_FOLDER = "General"
 
 COLLECTION = "chunks"
 

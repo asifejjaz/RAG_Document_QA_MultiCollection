@@ -1,4 +1,7 @@
-"""Multi-format ingestion: pdf, docx, xlsx/csv, txt/md, images. Chunk + embed + store."""
+"""Multi-format ingestion with hierarchical (parent->child) chunking + numeric check.
+Parses pdf/docx/xlsx/csv/txt/images -> parent chunks -> child (leaf) chunks with
+parent_text context -> embed leaves -> store. Verifies numeric preservation."""
+import re
 import uuid
 from pathlib import Path
 import fitz  # pymupdf
@@ -9,10 +12,10 @@ from app.rag import embed, store, llm
 
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".bmp"}
 MIME = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp", ".gif": "image/gif", ".bmp": "image/bmp"}
+_NUM = re.compile(r"[-+]?\$?\d{1,3}(?:,\d{3})+(?:\.\d+)?%?|[-+]?\$?\d+(?:\.\d+)?%?")
 
 
 def _sections(path: Path) -> list[dict]:
-    """Return [{text, location}] sections tailored to the file type."""
     ext = path.suffix.lower()
     out: list[dict] = []
     if ext == ".pdf":
@@ -25,7 +28,6 @@ def _sections(path: Path) -> list[dict]:
     elif ext == ".docx":
         d = docx.Document(str(path))
         paras = [p.text for p in d.paragraphs if p.text.strip()]
-        # include tables
         for tbl in d.tables:
             for row in tbl.rows:
                 cells = [c.text.strip() for c in row.cells if c.text.strip()]
@@ -35,8 +37,7 @@ def _sections(path: Path) -> list[dict]:
     elif ext in (".xlsx", ".xlsm"):
         wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
         for ws in wb.worksheets:
-            rows = []
-            header = None
+            rows, header = [], None
             for r in ws.iter_rows(values_only=True):
                 vals = [("" if v is None else str(v)) for v in r]
                 if not any(vals):
@@ -61,35 +62,55 @@ def _sections(path: Path) -> list[dict]:
     return [s for s in out if s["text"].strip()]
 
 
-def _chunk(text: str) -> list[str]:
+def _split(text: str, size: int, overlap: int) -> list[str]:
     text = text.strip()
-    if len(text) <= config.CHUNK_CHARS:
+    if len(text) <= size:
         return [text] if text else []
-    chunks, start = [], 0
+    out, start = [], 0
     while start < len(text):
-        end = start + config.CHUNK_CHARS
-        # try to break on a newline/space near the end
+        end = start + size
         if end < len(text):
-            brk = text.rfind("\n", start + config.CHUNK_CHARS // 2, end)
+            brk = text.rfind("\n", start + size // 2, end)
             if brk == -1:
-                brk = text.rfind(" ", start + config.CHUNK_CHARS // 2, end)
+                brk = text.rfind(" ", start + size // 2, end)
             if brk != -1:
                 end = brk
-        chunks.append(text[start:end].strip())
-        start = max(end - config.CHUNK_OVERLAP, end)
-    return [c for c in chunks if c]
+        out.append(text[start:end].strip())
+        start = max(end - overlap, end)
+    return [c for c in out if c]
 
 
-def ingest_file(user_id: int, path: Path, filename: str) -> dict:
-    """Parse -> chunk -> embed -> store. Returns {doc_id, chunks, embed_tokens}."""
-    sections = _sections(path)
-    chunks: list[dict] = []
+def _hierarchical(sections: list[dict]) -> list[dict]:
+    """parent chunks -> child (leaf) chunks carrying their parent's text as context."""
+    leaves = []
+    idx = 0
     for sec in sections:
-        for j, piece in enumerate(_chunk(sec["text"])):
-            chunks.append({"text": piece, "location": sec["location"], "chunk_index": len(chunks)})
-    if not chunks:
-        return {"doc_id": None, "chunks": 0, "embed_tokens": 0}
-    vectors, tokens = embed.embed([c["text"] for c in chunks], input_type="document")
+        for parent in _split(sec["text"], config.PARENT_CHARS, 0):
+            children = _split(parent, config.CHILD_CHARS, config.CHILD_OVERLAP) or [parent]
+            for child in children:
+                leaves.append({"text": child, "parent_text": parent,
+                               "location": sec["location"], "chunk_index": idx})
+                idx += 1
+    return leaves
+
+
+def _numeric_check(source: str, chunk_texts: list[str]) -> dict:
+    src = set(_NUM.findall(source))
+    if not src:
+        return {"total": 0, "preserved": 0, "missing": 0, "score": 1.0}
+    joined = " ".join(chunk_texts)
+    kept = {n for n in src if n in joined}
+    return {"total": len(src), "preserved": len(kept), "missing": len(src - kept),
+            "score": round(len(kept) / len(src), 3)}
+
+
+def ingest_file(user_id: int, path: Path, filename: str, folder: str) -> dict:
+    sections = _sections(path)
+    leaves = _hierarchical(sections)
+    if not leaves:
+        return {"doc_id": None, "chunks": 0, "embed_tokens": 0, "numeric": None}
+    vectors, tokens = embed.embed([c["text"] for c in leaves], input_type="document")
     doc_id = str(uuid.uuid4())
-    store.add_chunks(user_id, doc_id, filename, chunks, vectors)
-    return {"doc_id": doc_id, "chunks": len(chunks), "embed_tokens": tokens}
+    store.add_chunks(user_id, doc_id, filename, folder, leaves, vectors)
+    numeric = _numeric_check(" ".join(s["text"] for s in sections), [c["text"] for c in leaves])
+    return {"doc_id": doc_id, "chunks": len(leaves), "embed_tokens": tokens, "numeric": numeric}
