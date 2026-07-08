@@ -36,18 +36,22 @@
 
 <section id="features" class="mx-auto max-w-6xl px-6 pb-24">
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-    {% set feats = [
-      ("Every file type","PDF, Word, Excel, CSV, and images — each parsed and chunked the right way."),
-      ("Grounded & cited","Answers come only from your documents, with inline [n] citations to the source."),
-      ("Report generation","Turn any answer into a formatted PDF report you can download and share."),
-      ("Usage transparency","Per-account token usage stats — see exactly what each query costs.")
-    ] %}
-    {% for t,d in feats %}
     <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
-      <h3 class="mb-2 font-semibold text-white">{{ t }}</h3>
-      <p class="text-sm text-slate-400">{{ d }}</p>
+      <h3 class="mb-2 font-semibold text-white">Every file type</h3>
+      <p class="text-sm text-slate-400">PDF, Word, Excel, CSV, and images — each parsed and chunked the right way.</p>
     </div>
-    {% endfor %}
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      <h3 class="mb-2 font-semibold text-white">Grounded &amp; cited</h3>
+      <p class="text-sm text-slate-400">Answers come only from your documents, with inline citations to the source.</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      <h3 class="mb-2 font-semibold text-white">Report generation</h3>
+      <p class="text-sm text-slate-400">Turn any answer into a formatted PDF report you can download and share.</p>
+    </div>
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      <h3 class="mb-2 font-semibold text-white">Usage transparency</h3>
+      <p class="text-sm text-slate-400">Per-account token usage stats — see exactly what each query costs.</p>
+    </div>
   </div>
 </section>
 

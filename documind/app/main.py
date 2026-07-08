@@ -14,23 +14,24 @@ app = FastAPI(title=config.PRODUCT_NAME)
 BASE = Path(__file__).resolve().parent
 app.mount("/static", StaticFiles(directory=str(BASE / "static")), name="static")
 tpl = Jinja2Templates(directory=str(BASE / "templates"))
+tpl.env.cache = None  # workaround: Jinja LRUCache key breaks under Python 3.14
 CTX = {"product": config.PRODUCT_NAME, "tagline": config.TAGLINE}
 
 
 # ---------- pages ----------
 @app.get("/", response_class=HTMLResponse)
 def landing(request: Request):
-    return tpl.TemplateResponse("landing.html", {"request": request, **CTX, "user": auth.current_user(request)})
+    return tpl.TemplateResponse(request, "landing.html", {**CTX, "user": auth.current_user(request)})
 
 
 @app.get("/login", response_class=HTMLResponse)
 def login_page(request: Request):
-    return tpl.TemplateResponse("auth.html", {"request": request, **CTX, "mode": "login", "error": None})
+    return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "login", "error": None})
 
 
 @app.get("/signup", response_class=HTMLResponse)
 def signup_page(request: Request):
-    return tpl.TemplateResponse("auth.html", {"request": request, **CTX, "mode": "signup", "error": None})
+    return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": None})
 
 
 @app.get("/app", response_class=HTMLResponse)
@@ -38,7 +39,7 @@ def app_page(request: Request):
     user = auth.current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=302)
-    return tpl.TemplateResponse("app.html", {"request": request, **CTX, "email": user["email"]})
+    return tpl.TemplateResponse(request, "app.html", {**CTX, "email": user["email"]})
 
 
 # ---------- auth ----------
@@ -46,7 +47,7 @@ def app_page(request: Request):
 def login(request: Request, email: str = Form(...), password: str = Form(...)):
     u = db.get_user_by_email(email.strip().lower())
     if not u or not auth.verify_pw(password, u["pw_hash"]):
-        return tpl.TemplateResponse("auth.html", {"request": request, **CTX, "mode": "login", "error": "Invalid email or password."})
+        return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "login", "error": "Invalid email or password."})
     resp = RedirectResponse("/app", status_code=302)
     resp.set_cookie(auth.COOKIE, auth.make_cookie(u["id"]), httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
     return resp
@@ -56,9 +57,9 @@ def login(request: Request, email: str = Form(...), password: str = Form(...)):
 def signup(request: Request, email: str = Form(...), password: str = Form(...)):
     email = email.strip().lower()
     if len(password) < 6:
-        return tpl.TemplateResponse("auth.html", {"request": request, **CTX, "mode": "signup", "error": "Password must be at least 6 characters."})
+        return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": "Password must be at least 6 characters."})
     if db.get_user_by_email(email):
-        return tpl.TemplateResponse("auth.html", {"request": request, **CTX, "mode": "signup", "error": "That email is already registered."})
+        return tpl.TemplateResponse(request, "auth.html", {**CTX, "mode": "signup", "error": "That email is already registered."})
     uid = db.create_user(email, auth.hash_pw(password))
     resp = RedirectResponse("/app", status_code=302)
     resp.set_cookie(auth.COOKIE, auth.make_cookie(uid), httponly=True, samesite="lax", max_age=60 * 60 * 24 * 14)
