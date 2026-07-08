@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{ product }} — {{ tagline }}</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{teal2:'#2dd4bf',cyan2:'#22d3ee'}}}}</script>
+<style>body{background:radial-gradient(60% 50% at 20% 0%,rgba(45,212,191,.10),transparent 60%),#07121b;color:#e6f1f4;font-family:ui-sans-serif,system-ui}</style>
+</head>
+<body class="min-h-screen">
+<header class="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
+  <div class="flex items-center gap-2 text-lg font-bold">
+    <span class="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-teal2 to-cyan2 text-slate-900 font-black">◇</span>
+    {{ product }}
+  </div>
+  <nav class="flex items-center gap-4 text-sm">
+    {% if user %}
+      <a href="/app" class="rounded-lg bg-gradient-to-r from-teal2 to-cyan2 px-4 py-2 font-semibold text-slate-900">Open app</a>
+    {% else %}
+      <a href="/login" class="text-slate-300 hover:text-white">Log in</a>
+      <a href="/signup" class="rounded-lg bg-gradient-to-r from-teal2 to-cyan2 px-4 py-2 font-semibold text-slate-900">Try it free</a>
+    {% endif %}
+  </nav>
+</header>
+
+<section class="mx-auto max-w-4xl px-6 pt-16 pb-20 text-center">
+  <p class="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-cyan2">Document intelligence</p>
+  <h1 class="text-4xl font-bold leading-tight md:text-6xl">Ask your documents.<br/><span class="bg-gradient-to-r from-teal2 to-cyan2 bg-clip-text text-transparent">Get answers you can trace.</span></h1>
+  <p class="mx-auto mt-6 max-w-2xl text-lg text-slate-300">Upload PDFs, Word docs, Excel sheets, and images. {{ product }} reads them, answers your questions with inline citations, and turns any answer into a downloadable report.</p>
+  <div class="mt-8 flex justify-center gap-4">
+    <a href="{{ '/app' if user else '/signup' }}" class="rounded-xl bg-gradient-to-r from-teal2 to-cyan2 px-7 py-3 font-semibold text-slate-900">Try it — it's free</a>
+    <a href="#features" class="rounded-xl border border-slate-700 px-7 py-3 font-semibold text-slate-200 hover:border-slate-500">See features</a>
+  </div>
+</section>
+
+<section id="features" class="mx-auto max-w-6xl px-6 pb-24">
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    {% set feats = [
+      ("Every file type","PDF, Word, Excel, CSV, and images — each parsed and chunked the right way."),
+      ("Grounded & cited","Answers come only from your documents, with inline [n] citations to the source."),
+      ("Report generation","Turn any answer into a formatted PDF report you can download and share."),
+      ("Usage transparency","Per-account token usage stats — see exactly what each query costs.")
+    ] %}
+    {% for t,d in feats %}
+    <div class="rounded-2xl border border-slate-800 bg-slate-900/40 p-6">
+      <h3 class="mb-2 font-semibold text-white">{{ t }}</h3>
+      <p class="text-sm text-slate-400">{{ d }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</section>
+
+<footer class="border-t border-slate-800 py-8 text-center text-sm text-slate-500">© {{ product }} · Document Q&A with citations</footer>
+</body>
+</html>

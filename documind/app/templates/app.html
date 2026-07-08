@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{ product }} — Workspace</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{colors:{teal2:'#2dd4bf',cyan2:'#22d3ee'}}}}</script>
+<style>body{background:#07121b;color:#e6f1f4;font-family:ui-sans-serif,system-ui}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:#1e3443;border-radius:4px}</style>
+</head>
+<body class="h-screen overflow-hidden">
+<div class="flex h-full">
+  <!-- sidebar -->
+  <aside class="flex w-80 shrink-0 flex-col border-r border-slate-800 bg-slate-900/40">
+    <div class="flex items-center justify-between border-b border-slate-800 px-5 py-4">
+      <span class="flex items-center gap-2 font-bold"><span class="grid h-7 w-7 place-items-center rounded-lg bg-gradient-to-br from-teal2 to-cyan2 text-slate-900 font-black">◇</span>{{ product }}</span>
+      <a href="/logout" class="text-xs text-slate-400 hover:text-white">Log out</a>
+    </div>
+
+    <div class="border-b border-slate-800 p-5">
+      <label class="mb-2 block text-xs font-semibold uppercase tracking-wide text-cyan2">Upload documents</label>
+      <input id="files" type="file" multiple class="block w-full text-xs text-slate-400 file:mr-3 file:rounded-lg file:border-0 file:bg-slate-800 file:px-3 file:py-1.5 file:text-slate-200" />
+      <button id="uploadBtn" class="mt-3 w-full rounded-lg bg-gradient-to-r from-teal2 to-cyan2 px-4 py-2 text-sm font-semibold text-slate-900 disabled:opacity-50">Upload & ingest</button>
+      <p class="mt-2 text-[11px] text-slate-500">PDF · Word · Excel · CSV · images. Max 25MB each.</p>
+      <div id="uploadStatus" class="mt-2 text-xs text-slate-400"></div>
+    </div>
+
+    <div class="flex-1 overflow-y-auto p-5">
+      <div class="mb-2 flex items-center justify-between">
+        <span class="text-xs font-semibold uppercase tracking-wide text-slate-400">Your documents</span>
+      </div>
+      <select id="docFilter" class="mb-3 w-full rounded-lg border border-slate-700 bg-slate-950 px-2 py-1.5 text-xs">
+        <option value="">All documents</option>
+      </select>
+      <ul id="docList" class="space-y-1.5 text-sm"></ul>
+    </div>
+
+    <div class="border-t border-slate-800 p-5 text-xs">
+      <div class="mb-2 font-semibold uppercase tracking-wide text-slate-400">Token usage</div>
+      <div id="usage" class="grid grid-cols-2 gap-2 text-slate-300"></div>
+    </div>
+  </aside>
+
+  <!-- chat -->
+  <main class="flex flex-1 flex-col">
+    <div class="border-b border-slate-800 px-6 py-3 text-sm text-slate-400">Signed in as <span class="text-slate-200">{{ email }}</span></div>
+    <div id="messages" class="flex-1 space-y-4 overflow-y-auto px-6 py-6"></div>
+    <div class="border-t border-slate-800 p-4">
+      <div class="mx-auto flex max-w-3xl items-end gap-2">
+        <textarea id="q" rows="1" placeholder="Ask a question about your documents…" class="flex-1 resize-none rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 text-sm outline-none focus:border-teal2"></textarea>
+        <button id="sendBtn" class="rounded-xl bg-gradient-to-r from-teal2 to-cyan2 px-5 py-3 text-sm font-semibold text-slate-900">Ask</button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), msgs=$("#messages");
+let lastAnswer=null;
+
+function esc(t){return (t||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function bubble(role,html){const d=document.createElement("div");d.className=role==="user"?"ml-auto max-w-[80%] rounded-2xl rounded-br-sm bg-teal2/20 px-4 py-2.5 text-sm":"mr-auto max-w-[85%] rounded-2xl rounded-bl-sm border border-slate-800 bg-slate-900/50 px-4 py-3 text-sm";d.innerHTML=html;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d;}
+
+async function refresh(){
+  const d=await (await fetch("/api/docs")).json();
+  const list=$("#docList"), sel=$("#docFilter"), cur=sel.value;
+  list.innerHTML=""; sel.innerHTML='<option value="">All documents</option>';
+  d.documents.forEach(doc=>{
+    const li=document.createElement("li");li.className="rounded-lg border border-slate-800 bg-slate-950/50 px-3 py-2";
+    li.innerHTML=`<div class="truncate text-slate-200" title="${esc(doc.filename)}">${esc(doc.filename)}</div><div class="text-[11px] text-slate-500">${doc.chunks} chunks</div>`;
+    list.appendChild(li);
+    const o=document.createElement("option");o.value=doc.doc_id;o.textContent=doc.filename;sel.appendChild(o);
+  });
+  sel.value=cur;
+  const u=await (await fetch("/api/usage")).json();
+  $("#usage").innerHTML=`
+    <div><div class="text-lg font-bold text-white">${u.total_tokens.toLocaleString()}</div>total tokens</div>
+    <div><div class="text-lg font-bold text-white">${u.chats}</div>questions</div>
+    <div><div class="text-lg font-bold text-white">${u.documents}</div>documents</div>
+    <div><div class="text-lg font-bold text-white">${u.output_tokens.toLocaleString()}</div>output tokens</div>`;
+}
+
+$("#uploadBtn").onclick=async()=>{
+  const fs=$("#files").files; if(!fs.length){return;}
+  const fd=new FormData(); for(const f of fs) fd.append("files",f);
+  $("#uploadBtn").disabled=true; $("#uploadStatus").textContent="Ingesting… this can take a moment for large or image files.";
+  try{
+    const r=await fetch("/api/ingest",{method:"POST",body:fd});
+    const d=await r.json();
+    $("#uploadStatus").innerHTML=d.results.map(x=>x.error?`<div class="text-red-400">✗ ${esc(x.filename)}: ${esc(x.error)}</div>`:`<div class="text-teal2">✓ ${esc(x.filename)} — ${x.chunks} chunks</div>`).join("");
+    $("#files").value=""; refresh();
+  }catch(e){$("#uploadStatus").textContent="Upload failed.";}
+  $("#uploadBtn").disabled=false;
+};
+
+async function send(){
+  const q=$("#q").value.trim(); if(!q) return;
+  $("#q").value=""; bubble("user",esc(q));
+  const thinking=bubble("agent",'<span class="text-slate-500">Searching your documents…</span>');
+  try{
+    const r=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({question:q,doc_id:$("#docFilter").value||null})});
+    const d=await r.json();
+    lastAnswer={question:q,...d};
+    let html=`<div class="whitespace-pre-wrap">${esc(d.answer)}</div>`;
+    if(d.sources&&d.sources.length){
+      html+=`<div class="mt-3 border-t border-slate-800 pt-2 text-[11px] text-slate-400"><div class="mb-1 font-semibold">Sources</div>`+
+        d.sources.map(s=>`<div>[${s.n}] ${esc(s.filename)} — ${esc(s.location)}</div>`).join("")+`</div>`;
+      html+=`<button onclick="downloadReport()" class="mt-3 rounded-lg border border-teal2/50 px-3 py-1.5 text-xs font-semibold text-teal2 hover:bg-teal2/10">⬇ Download as report</button>`;
+    }
+    thinking.innerHTML=html;
+  }catch(e){thinking.innerHTML='<span class="text-red-400">Something went wrong. Try again.</span>';}
+  msgs.scrollTop=msgs.scrollHeight; refresh();
+}
+$("#sendBtn").onclick=send;
+$("#q").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send();}});
+
+async function downloadReport(){
+  if(!lastAnswer) return;
+  const body=`Question: ${lastAnswer.question}\n\n${lastAnswer.answer}`;
+  const r=await fetch("/api/report",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({title:lastAnswer.question.slice(0,80),body,sources:lastAnswer.sources})});
+  const blob=await r.blob(); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");a.href=url;a.download="report.pdf";a.click();URL.revokeObjectURL(url);
+  refresh();
+}
+window.downloadReport=downloadReport;
+
+bubble("agent",'Welcome! Upload documents on the left, then ask me anything about them. I answer only from your files, with citations.');
+refresh();
+</script>
+</body>
+</html>
